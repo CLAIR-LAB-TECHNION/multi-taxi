@@ -433,21 +433,16 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
         """
         ALL_ACTIONS_NAMES, BASE_AVAILABLE_ACTIONS = self._add_custom_dropoff_for_passengers()
         action_names = ALL_ACTIONS_NAMES  # From control_config.py
-        base_dictionary = {}  # Total dictionary{index -> action_name}
-        for index, action in enumerate(action_names):
-            base_dictionary[index] = action
-
-        available_action_list = BASE_AVAILABLE_ACTIONS  # From control_config.py
 
         if self.option_to_standby:
-            available_action_list += ['turn_engine_on', 'turn_engine_off', 'standby']
+            action_names += ['turn_engine_on', 'turn_engine_off', 'standby']
 
         if not self.max_fuel[0] == 0:
-            available_action_list.append('refuel')
+            action_names.append('refuel')
 
-        action_index_dictionary = dict((value, key) for key, value in base_dictionary.items())  # {action -> index} all
-        available_actions_indexes = [action_index_dictionary[action] for action in available_action_list]
-        index_action_dictionary = dict((key, value) for key, value in base_dictionary.items())
+        index_action_dictionary = dict(enumerate(action_names))  # Total dictionary{index -> action_name}
+        available_actions_indexes = index_action_dictionary.keys()
+        action_index_dictionary = {v: k for k, v in index_action_dictionary.items()}  # {action -> index} all
 
         return list(set(available_actions_indexes)), index_action_dictionary, action_index_dictionary
 
