@@ -11,6 +11,6 @@ For example of use - skim through the [demonstration notebook](https://github.co
 
 Simply installable via:
 
-<code>pip install MultiTaxiLib==0.1.0 </code>
+<code>pip install 'git+https://github.com/sarah-keren/multi-taxi' </code>
 
 Code originated from [repo](https://github.com/ofirAbu/MultiTaxiLib), by Ofir Abu during joint work involving MARL Resilience. Feel free to give a star in the original repo if you find the project useful :)
