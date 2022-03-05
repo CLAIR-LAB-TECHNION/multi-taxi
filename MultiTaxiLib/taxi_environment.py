@@ -135,7 +135,7 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
                  domain_map: list = MAP, taxis_capacity: list = None, collision_sensitive_domain: bool = False,
                  fuel_type_list: list = None, option_to_stand_by: bool = False, view_len: int = 2,
                  rewards_table: Dict = TAXI_ENVIRONMENT_REWARDS, observation_type: str = 'symbolic',
-                 can_see_others: bool = False):
+                 can_see_others: bool = False, action_failure_prob: float = 0.0):
         """
         Args:
             num_taxis: number of taxis in the domain
@@ -148,12 +148,20 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
             option_to_stand_by: can taxis simply stand in place
             view_len: width and height of the observation window for a taxi
             can_see_others: if True, taxis observations will include other taxis locations
+            action_failure_prob: the probability
         """
         # initializing rewards table
         self.can_see_others = can_see_others
         if rewards_table != TAXI_ENVIRONMENT_REWARDS:
             rewards_table = TAXI_ENVIRONMENT_REWARDS.update(rewards_table)
         self.rewards_table = rewards_table
+
+        # initialize stochastic prob
+        if action_failure_prob > 1 or action_failure_prob < 0:  # check value in bounds
+            raise ValueError('action_failure_prob parameter must be a number between 0 and 1')
+        elif action_failure_prob > 0 and option_to_stand_by is False:
+            raise ValueError('action_failure_prob can only be used when setting option_to_stand_by to True')
+        self.action_failure_prob = action_failure_prob
 
         # Initializing default values
         self.current_step = 0
@@ -280,6 +288,7 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
         dimensions_sizes += locations_sizes
         if self.can_see_others:
             dimensions_sizes += locations_sizes * (self.num_taxis - 1)
+
         # for _ in range(self.num_taxis):
         dimensions_sizes += fuel_size
 
@@ -477,6 +486,11 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
             action_list = basic_utils.get_action_list(action_list)
 
             for action in action_list:
+                # consider stochastic actions
+                action_prob = np.random.uniform(low=0., high=1.)
+                if action_prob < self.action_failure_prob:
+                    action = self.action_index_dictionary['standby']
+
                 taxi = self.taxis_names.index(taxi_name)
                 reward = reward_utils.partial_closest_path_reward(self.state, 'step')  # Default reward
                 moved = False  # Indicator variable for later use
