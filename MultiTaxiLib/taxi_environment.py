@@ -235,7 +235,7 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
             self.max_dim *= dim
 
         self.observation_space = MultiDiscrete(self.vector_observation_dims) if observation_type == 'symbolic' else Box(
-            low=0, high=255, shape=(self.view_len, self.view_len))
+            low=0, high=255, shape=(self.view_len * 2 + 1, self.view_len * 4 + 1, 3))
         self.observation_type = observation_type
         # self.observation_space = gym.spaces.Discrete(self.max_dim)
 
