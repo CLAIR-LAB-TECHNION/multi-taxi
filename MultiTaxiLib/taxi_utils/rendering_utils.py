@@ -175,7 +175,7 @@ def render(domain_map: list, state: list, num_taxis: int, collided: np.ndarray, 
         end = tuple(destinations[i])
         if location == 1:
             outfile.write("Passenger{}: Location: Arrived!, Destination: {}\n".format(i + 1, end))
-        if location == 2:
+        elif location == 2:
             outfile.write("Passenger{}: Location: {}, Destination: {}\n".format(i + 1, start, end))
         else:
             outfile.write("Passenger{}: Location: Taxi{}, Destination: {}\n".format(i + 1, location - 2, end))
