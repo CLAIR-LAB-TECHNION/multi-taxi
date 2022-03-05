@@ -1,0 +1,9 @@
+# python compiled files
+__pycache__/
+*.egg-info/
+
+# jetbrains workspace
+.idea/
+
+# jupyter
+.ipynb_checkpoints/
