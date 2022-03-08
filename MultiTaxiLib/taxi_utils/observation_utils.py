@@ -36,7 +36,7 @@ def partial_observations(state: list) -> list:
 
 
 def get_status_vector_observation(state: list, agent_name: str, taxis_names: list, num_taxis: int,
-                                  can_see_others: bool = False) -> np.array:
+                                  can_see_others: bool = False, pickup_only: bool = False) -> np.array:
     """
     Takes only the observation of the specified agent.
     Args:
@@ -45,7 +45,8 @@ def get_status_vector_observation(state: list, agent_name: str, taxis_names: lis
         agent_name: observer name
         taxis_names: list of all taxis names sorted
         num_taxis: number of taxis occupying the environment
-
+        can_see_others: will show other taxis in the vector
+        pickup_only: will show only pickup locations of passengers (no destination).
     Returns: observation of the specified agent (state wise)
 
     """
@@ -56,6 +57,9 @@ def get_status_vector_observation(state: list, agent_name: str, taxis_names: lis
     agent_index = taxis_names.index(agent_name)
 
     taxis, fuels, passengers_start_locations, passengers_destinations, passengers_locations = state.copy()
+
+    if pickup_only:  # remove passenger destinations from the passenger information for pickup only task
+        passengers_destinations = []
     passengers_information = flatten(passengers_start_locations) + flatten(
         passengers_destinations) + passengers_locations
 

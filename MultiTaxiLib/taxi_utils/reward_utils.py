@@ -5,11 +5,10 @@ The environment is passed a function via the control_config.py file, and uses th
 turn.
 The different reward functions are implemented in this file.
 """
-from MultiTaxiLib.config import TAXI_ENVIRONMENT_REWARDS
 from MultiTaxiLib.taxi_utils import basic_utils
 
 
-def partial_closest_path_reward(state: list, basic_reward_str: str, taxi_index: int = None,
+def partial_closest_path_reward(state: list, basic_reward_str: str, rewards_table, taxi_index: int = None,
                                 reward_const: int = 15) -> int:
     """
     Computes the reward for a taxi and it's defined by:
@@ -18,8 +17,8 @@ def partial_closest_path_reward(state: list, basic_reward_str: str, taxi_index: 
     other actions - basic reward from config table
     Args:
         state: current state of the environment
-
         basic_reward_str: the reward we would like to give
+        rewards_table: the rewards table for the taxi env instance
         taxi_index: index of the specific taxi, using this parameter only if the action is a dropoff variation.
         reward_const: a hyper-parameter for the reward calculation, maybe negligible, need to check.
 
@@ -28,7 +27,7 @@ def partial_closest_path_reward(state: list, basic_reward_str: str, taxi_index: 
     """
 
     if basic_reward_str not in ['intermediate_dropoff', 'final_dropoff'] or taxi_index is None:
-        return TAXI_ENVIRONMENT_REWARDS[basic_reward_str]
+        return rewards_table[basic_reward_str]
 
     # [taxis_locations, fuels, passengers_start_locations, destinations, passengers_status]
     current_state = state
@@ -43,4 +42,4 @@ def partial_closest_path_reward(state: list, basic_reward_str: str, taxi_index: 
             basic_utils.passenger_destination_l1_distance(state, passenger_index,
                                                           taxi_current_row,
                                                           taxi_current_col)) * \
-           TAXI_ENVIRONMENT_REWARDS[basic_reward_str] -1
+           rewards_table[basic_reward_str] -1

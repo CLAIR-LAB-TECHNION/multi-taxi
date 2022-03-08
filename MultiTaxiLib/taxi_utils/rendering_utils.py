@@ -135,7 +135,7 @@ def get_current_map_with_agents(domain_map: list, state: list, num_taxis: int, c
 
 
 def render(domain_map: list, state: list, num_taxis: int, collided: np.ndarray, last_action: dict,
-           action_index_dictionary: dict, dones: dict, mode: str = 'human') -> str:
+           action_index_dictionary: dict, dones: dict, mode: str = 'human', pickup_only: bool = False) -> str:
     """
     Renders the domain map at the current state
     Args:
@@ -159,6 +159,11 @@ def render(domain_map: list, state: list, num_taxis: int, collided: np.ndarray, 
     taxis, fuels, passengers_start_coordinates, destinations, passengers_locations = state
     colors = ['yellow', 'red', 'white', 'green', 'cyan', 'crimson', 'gray', 'magenta'] * 5
 
+    if pickup_only:  # if pickup only, remove destination from render
+        destinations = ['pickup only!' for _ in destinations]
+    else:  # other wise, use tuple locations (instead of list)
+        destinations = [tuple(d) for d in destinations]
+
     # Rendering actions and passengers/ taxis status
 
     if last_action is not None:
@@ -172,7 +177,7 @@ def render(domain_map: list, state: list, num_taxis: int, collided: np.ndarray, 
                                                                                       collided[i] == 1))
     for i, location in enumerate(passengers_locations):
         start = tuple(passengers_start_coordinates[i])
-        end = tuple(destinations[i])
+        end = destinations[i]
         if location == 1:
             outfile.write("Passenger{}: Location: Arrived!, Destination: {}\n".format(i + 1, end))
         elif location == 2:

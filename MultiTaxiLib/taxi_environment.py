@@ -8,7 +8,8 @@ from gym.utils import seeding
 import numpy as np
 from ray import rllib
 
-from MultiTaxiLib.config import TAXI_ENVIRONMENT_REWARDS, BASE_AVAILABLE_ACTIONS, ALL_ACTIONS_NAMES
+from MultiTaxiLib.config import (TAXI_ENVIRONMENT_REWARDS, BASE_AVAILABLE_ACTIONS, ALL_ACTIONS_NAMES,
+                                 PICKUP_ONLY_TAXI_ENVIRONMENT_REWARDS)
 from gym.spaces import MultiDiscrete, Box
 
 from MultiTaxiLib.taxi_utils import actions_utils, observation_utils, basic_utils, reward_utils, rendering_utils
@@ -135,9 +136,9 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
     def __init__(self, _=0, num_taxis: int = 1, num_passengers: int = 1, max_fuel: list = None,
                  domain_map: list = MAP, taxis_capacity: list = None, collision_sensitive_domain: bool = False,
                  fuel_type_list: list = None, option_to_stand_by: bool = False, view_len: int = 2,
-                 rewards_table: Dict = TAXI_ENVIRONMENT_REWARDS, observation_type: str = 'symbolic',
-                 can_see_others: bool = False,
-                 stochastic_action_function: Union[Dict[str, Callable[[str], str]], Callable[[str], str]] = None):
+                 rewards_table: Dict = None, observation_type: str = 'symbolic', can_see_others: bool = False,
+                 stochastic_action_function: Union[Dict[str, Callable[[str], str]], Callable[[str], str]] = None,
+                 pickup_only: bool = False):
         """
         Args:
             num_taxis: number of taxis in the domain
@@ -160,12 +161,24 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
                                         that do not appear in the dictionary will have deterministic actions. Invalid
                                         taxi names will be ignored.
                                         Default value is `None`, meaning all actions are deterministic for all taxis.
+            pickup_only: changes the environment such that all passengers must be picked up, and don't have to be
+                         dropped off. if `True`, the default rewards table is changed to
+                         `PICKUP_ONLY_TAXI_ENVIRONMENT_REWARDS`. The 'dropoff' action is no longer available. the
+                         `taxis_capacity` changes to be the maximum number of pickups a taxi can do in one episode.
         """
-        # initializing rewards table
         self.can_see_others = can_see_others
-        if rewards_table != TAXI_ENVIRONMENT_REWARDS:
-            rewards_table = TAXI_ENVIRONMENT_REWARDS.update(rewards_table)
-        self.rewards_table = rewards_table
+        self.pickup_only = pickup_only
+
+        # initializing rewards table
+        if self.pickup_only:  # choose correct default rewards table
+            self.rewards_table = PICKUP_ONLY_TAXI_ENVIRONMENT_REWARDS.copy()
+        else:
+            self.rewards_table = TAXI_ENVIRONMENT_REWARDS.copy()
+        if rewards_table is not None:  # update rewards table with input customization
+            self.rewards_table.update(rewards_table)
+        # set a default reward function using the updated rewards table
+        self.reward_method = lambda s, r, taxi=None: reward_utils.partial_closest_path_reward(s, r, self.rewards_table,
+                                                                                              taxi)
 
         # Initializing default values
         self.current_step = 0
@@ -308,7 +321,10 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
         dimensions_sizes += fuel_size
 
         for _ in range(self.num_passengers):
-            dimensions_sizes += 2 * locations_sizes
+            if self.pickup_only:  # for every passenger we only need the pickup location
+                dimensions_sizes += locations_sizes
+            else:  # for every passenger we need a location and destination
+                dimensions_sizes += 2 * locations_sizes
         # dimensions_sizes += 2 * locations_sizes
         for _ in range(self.num_passengers):
             dimensions_sizes += passengers_status_size
@@ -404,7 +420,7 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
             #                                                                         self.taxis_names, self.num_taxis))
             if self.observation_type == 'symbolic':
                 observations[taxi_id] = observation_utils.get_status_vector_observation(
-                    self.state, taxi_id, self.taxis_names, self.num_taxis, self.can_see_others)
+                    self.state, taxi_id, self.taxis_names, self.num_taxis, self.can_see_others, self.pickup_only)
             else:
                 observations[taxi_id] = observation_utils.get_image_obs_by_agent_id(agent_id=i, state=self.state,
                                                                                     num_taxis=self.num_taxis,
@@ -455,13 +471,17 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
         (action -> index).
 
         """
-        ALL_ACTIONS_NAMES, BASE_AVAILABLE_ACTIONS = self._add_custom_dropoff_for_passengers()
-        action_names = ALL_ACTIONS_NAMES  # From control_config.py
+        if self.pickup_only:  # no dropoff operations at all for pickup only task:
+            action_names = ALL_ACTIONS_NAMES.copy()
+            action_names.remove('dropoff')
+        else:
+            # From control_config.py
+            action_names, _ = self._add_custom_dropoff_for_passengers()
 
         if self.option_to_standby:
             action_names += ['turn_engine_on', 'turn_engine_off', 'standby']
 
-        if not self.max_fuel[0] == 0:
+        if not self.is_infinite_fuel:
             action_names.append('refuel')
 
         index_action_dictionary = dict(enumerate(action_names))  # Total dictionary{index -> action_name}
@@ -520,7 +540,7 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
                     info[taxi_name].setdefault('last_performed_actions', []).append(new_action_str)
 
                 taxi = self.taxis_names.index(taxi_name)
-                reward = reward_utils.partial_closest_path_reward(self.state, 'step')  # Default reward
+                reward = self.reward_method(self.state, 'step')  # Default reward
                 moved = False  # Indicator variable for later use
                 rewards[taxi_name] = reward
                 # taxi locations: [i, j]
@@ -529,7 +549,7 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
                 # passengers_status: [[1, 2, taxi_index+2] ... [1, 2, taxi_index+2]], 1 - delivered
                 taxis_locations, fuels, passengers_start_locations, destinations, passengers_status = self.state
                 self.dones = get_done_dictionary(self.dones, passengers_status, fuels, self.collided,
-                                                 self.is_infinite_fuel, self.taxis_names)
+                                                 self.is_infinite_fuel, self.taxis_names, self.pickup_only)
                 # done = all(loc == 1 for loc in passengers_status)
                 if self.dones['__all__']:
                     continue
@@ -539,7 +559,7 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
 
                 # If taxi is collided, it can't perform a step
                 if self.collided[taxi] == 1:
-                    rewards[taxi_name] = reward_utils.partial_closest_path_reward(self.state, 'collided')
+                    rewards[taxi_name] = self.reward_method(self.state, 'collided')
                     self.dones[taxi_name] = True
                     continue
 
@@ -551,7 +571,7 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
                     if self.dones[taxi_name]:
                         continue
                     else:
-                        rewards[taxi_name] = reward_utils.partial_closest_path_reward(self.state, 'bad_refuel')
+                        rewards[taxi_name] = self.reward_method(self.state, 'bad_refuel')
                         self.dones[taxi_name] = True
                         continue
 
@@ -570,7 +590,7 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
                     # update reward according to standby/ turn-on/ unrelated + turn engine on if requsted
                     rewards[taxi_name], self.engine_status_list = \
                         actions_utils.engine_is_off_actions(self.state, index_action_dictionary[action], taxi,
-                                                            reward_utils.partial_closest_path_reward,
+                                                            self.reward_method,
                                                             self.engine_status_list)
 
 
@@ -578,7 +598,7 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
                     # Binding
                     if index_action_dictionary[action] == 'bind':
                         self.bounded = False
-                        rewards[taxi_name] = reward_utils.partial_closest_path_reward(self.state, 'bind')
+                        rewards[taxi_name] = self.reward_method(self.state, 'bind')
 
                     # Movement
                     if 'goto' in index_action_dictionary[action]:
@@ -604,7 +624,7 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
                                                                          moved, action, reward, self.num_taxis,
                                                                          self.option_to_standby,
                                                                          self.action_index_dictionary, self.collided,
-                                                                         reward_utils.partial_closest_path_reward)
+                                                                         self.reward_method)
 
                     # Pickup
                     elif index_action_dictionary[action] == 'pickup':
@@ -613,7 +633,7 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
                                                                                           passengers_status,
                                                                                           taxi_location, reward,
                                                                                           self.taxis_capacity,
-                                                                                          reward_utils.partial_closest_path_reward)
+                                                                                          self.reward_method)
 
                     # Dropoff
                     elif 'dropoff' in index_action_dictionary[action]:
@@ -627,16 +647,16 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
                             taxi_location,
                             reward,
                             passenger_index,
-                            reward_utils.partial_closest_path_reward)
+                            self.reward_method)
 
                     # Turning engine off
                     elif index_action_dictionary[action] == 'turn_engine_off':
-                        rewards[taxi_name] = reward_utils.partial_closest_path_reward(self.state, 'turn_engine_off')
+                        rewards[taxi_name] = self.reward_method(self.state, 'turn_engine_off')
                         self.engine_status_list[taxi] = 0
 
                     # Standby with engine on
                     elif index_action_dictionary[action] == 'standby':
-                        rewards[taxi_name] = reward_utils.partial_closest_path_reward(self.state, 'standby_engine_on')
+                        rewards[taxi_name] = self.reward_method(self.state, 'standby_engine_on')
 
                 # Here we have finished checking for action for taxi-i
                 # Fuel consumption
@@ -645,7 +665,7 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
                         self.state, taxi,
                         taxis_locations,
                         row, col, reward, fuel, self.is_infinite_fuel,
-                        reward_utils.partial_closest_path_reward)
+                        self.reward_method)
 
                 if not 'goto_src0' in list(self.action_index_dictionary.keys()):
                     if (not moved) and action in [self.action_index_dictionary[direction] for
@@ -661,10 +681,10 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
                                                                                 self.fuel_type_list,
                                                                                 self.is_infinite_fuel,
                                                                                 self.max_fuel,
-                                                                                reward_utils.partial_closest_path_reward)
+                                                                                self.reward_method)
                 self.state[-1] = passengers_status
                 self.dones = get_done_dictionary(self.dones, passengers_status, fuels, self.collided,
-                                                 self.is_infinite_fuel, self.taxis_names)
+                                                 self.is_infinite_fuel, self.taxis_names, self.pickup_only)
 
         obs = {}
         for i, taxi_id in enumerate(action_dict.keys()):
@@ -674,7 +694,7 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
             #     self.state, taxi_id, self.taxis_names, self.num_taxis)
             if self.observation_type == 'symbolic':
                 obs[taxi_id] = observation_utils.get_status_vector_observation(
-                    self.state, taxi_id, self.taxis_names, self.num_taxis, self.can_see_others)
+                    self.state, taxi_id, self.taxis_names, self.num_taxis, self.can_see_others, self.pickup_only)
             else:
                 obs[taxi_id] = observation_utils.get_image_obs_by_agent_id(agent_id=i, state=self.state,
                                                                            num_taxis=self.num_taxis,
@@ -684,9 +704,9 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
         return obs, \
                rewards, self.dones, info
 
-    def render(self):
+    def render(self, mode='human'):
         render(self.desc.copy(), self.state, self.num_taxis, self.collided, self.last_action,
-               self.action_index_dictionary, self.dones)
+               self.action_index_dictionary, self.dones, mode=mode, pickup_only=self.pickup_only)
 
     def change_observation_from_vector_to_number(self, observation):
         number_observation = self.max_dim

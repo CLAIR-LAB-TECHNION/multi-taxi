@@ -38,6 +38,26 @@ SIMPLIFIED_TAXI_ENVIRONMENT_REWARDS = dict(
     unrelated_action=-1,
 )
 
+PICKUP_ONLY_TAXI_ENVIRONMENT_REWARDS = dict(
+    step=-1,
+    no_fuel=-1,
+    bad_pickup=-1,
+    bad_dropoff=0,
+    bad_refuel=-1,
+    bad_fuel=-1,
+    pickup=100,
+    standby_engine_off=-1,
+    turn_engine_on=-1,
+    turn_engine_off=-1,
+    standby_engine_on=-1,
+    intermediate_dropoff=0,
+    final_dropoff=0,
+    hit_wall=-1,
+    collision=-1,
+    collided=-1,
+    unrelated_action=-1,
+)
+
 COLOR_MAP = {
     ' ': [0, 0, 102],  # Black background
     '_': [0, 0, 102],

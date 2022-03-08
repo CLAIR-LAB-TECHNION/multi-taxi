@@ -1,6 +1,6 @@
 
 def get_done_dictionary(current_done_dictionary: dict, passengers_status: list, fuel_tanks: list,
-                        collision_status: dict, is_infinite_fuel: bool, taxi_names: list) -> dict:
+                        collision_status: dict, is_infinite_fuel: bool, taxi_names: list, pickup_only: bool) -> dict:
     """
     Get passengers statuses, fuel indications, collided indications and retrieve the updated done dictionary
     Args:
@@ -25,7 +25,6 @@ def get_done_dictionary(current_done_dictionary: dict, passengers_status: list, 
         if collided == 1:
             updated_dones[taxi_names[i]] = True
 
-    updated_dones['__all__'] = True
     updated_dones['__all__'] = all(list(updated_dones.values()))
 
     if updated_dones['__all__']:
@@ -33,7 +32,10 @@ def get_done_dictionary(current_done_dictionary: dict, passengers_status: list, 
 
     are_all_passengers_arrived = True
     for status in passengers_status:
-        if status != 1:
+        if pickup_only:  # pickup only task, passenger not yet picked up
+            if status == 2:
+                are_all_passengers_arrived = False
+        elif status != 1:  # pickup and dropoff task, passenger not in destination
             are_all_passengers_arrived = False
     if are_all_passengers_arrived:
         for key in list(updated_dones.keys()):
