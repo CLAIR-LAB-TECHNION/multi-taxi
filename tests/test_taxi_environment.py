@@ -2,18 +2,13 @@ from MultiTaxiLib.taxi_environment import TaxiEnv
 from MultiTaxiLib.taxi_utils.rendering_utils import map2rgb
 import random
 
+from gym.spaces import MultiDiscrete
 import ray
 from ray import tune
 from ray.rllib.examples.models.shared_weights_model import TorchSharedWeightsModel
 
 from ray.rllib.models import ModelCatalog
 from ray.rllib.policy.policy import PolicySpec
-
-
-def test__get_observation_space_list():
-    taxi_env = TaxiEnv()
-    obs_space_list = taxi_env._get_observation_space_list()
-    assert obs_space_list == [7, 12, 7, 12, 7, 12, 4]
 
 
 def test_reset():
