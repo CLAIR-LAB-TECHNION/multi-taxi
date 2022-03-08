@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import random
-from typing import Dict
+from typing import Dict, Callable, Union
+from collections import defaultdict
 
 import gym
 from gym.utils import seeding
@@ -135,7 +136,8 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
                  domain_map: list = MAP, taxis_capacity: list = None, collision_sensitive_domain: bool = False,
                  fuel_type_list: list = None, option_to_stand_by: bool = False, view_len: int = 2,
                  rewards_table: Dict = TAXI_ENVIRONMENT_REWARDS, observation_type: str = 'symbolic',
-                 can_see_others: bool = False, action_failure_prob: float = 0.0):
+                 can_see_others: bool = False,
+                 stochastic_action_function: Union[Dict[str, Callable[[str], str]], Callable[[str], str]] = None):
         """
         Args:
             num_taxis: number of taxis in the domain
@@ -148,20 +150,22 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
             option_to_stand_by: can taxis simply stand in place
             view_len: width and height of the observation window for a taxi
             can_see_others: if True, taxis observations will include other taxis locations
-            action_failure_prob: the probability
+            stochastic_action_function: A function that defines stochastic actions for all taxis.
+                                            input: the desired action name
+                                            output: any valid action name.
+                                        see `actions_utils.StochasticActionFunction` for an example.
+                                        Can be a dictionary of stochastic action functions in the format:
+                                            taxi_name --> stochastic_action_function_for_taxi
+                                        This will cause different taxis to have different action stochasticity. Taxis
+                                        that do not appear in the dictionary will have deterministic actions. Invalid
+                                        taxi names will be ignored.
+                                        Default value is `None`, meaning all actions are deterministic for all taxis.
         """
         # initializing rewards table
         self.can_see_others = can_see_others
         if rewards_table != TAXI_ENVIRONMENT_REWARDS:
             rewards_table = TAXI_ENVIRONMENT_REWARDS.update(rewards_table)
         self.rewards_table = rewards_table
-
-        # initialize stochastic prob
-        if action_failure_prob > 1 or action_failure_prob < 0:  # check value in bounds
-            raise ValueError('action_failure_prob parameter must be a number between 0 and 1')
-        elif action_failure_prob > 0 and option_to_stand_by is False:
-            raise ValueError('action_failure_prob can only be used when setting option_to_stand_by to True')
-        self.action_failure_prob = action_failure_prob
 
         # Initializing default values
         self.current_step = 0
@@ -214,6 +218,17 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
 
         self.num_taxis = num_taxis
         self.taxis_names = ["taxi_" + str(index + 1) for index in range(num_taxis)]
+
+        # initialize stochastic actions function or function dict.
+        if isinstance(stochastic_action_function, dict):  # dict input
+            # all taxis have a deterministic actions using a StochasticActionFunction with no specifications
+            self.stochastic_action_function = defaultdict(lambda: actions_utils.StochasticActionFunction({}))
+
+            # update functions for all taxis that appear in the given dict
+            self.stochastic_action_function.update(stochastic_action_function)
+        else:  # callable or None input
+            # all taxis have are assigned the given stochastic function or None if no function is given
+            self.stochastic_action_function = defaultdict(lambda: stochastic_action_function)
 
         self.collision_sensitive_domain = collision_sensitive_domain
 
@@ -472,8 +487,8 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
 
         Returns: - dict{taxi_id: observation}, dict{taxi_id: reward}, dict{taxi_id: done}, _
         """
-
         rewards = {}
+        info = {}
         self.current_step += 1
 
         randomized_order_of_taxis = list(action_dict.keys())
@@ -485,11 +500,24 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
             # meta operations on the type of the action
             action_list = basic_utils.get_action_list(action_list)
 
+            # get taxi specific stochastic action function
+            taxi_stochastic_func = self.stochastic_action_function[taxi_name]
+
+            # create info dict for the current taxi
+            info[taxi_name] = {}
+
             for action in action_list:
-                # consider stochastic actions
-                action_prob = np.random.uniform(low=0., high=1.)
-                if action_prob < self.action_failure_prob:
-                    action = self.action_index_dictionary['standby']
+
+                # consider the stochastic case. if a stochastic action function was given upon initialization, it
+                # is used to alter the action.
+                if taxi_stochastic_func:
+                    action_str = self.index_action_dictionary[action]  # convert action to string
+                    new_action_str = taxi_stochastic_func(action_str)  # get stochastic action
+                    action = self.action_index_dictionary[new_action_str]  # convert new action to index
+
+                    # log desired and performed actions for debugging
+                    info[taxi_name].setdefault('last_chosen_actions', []).append(action_str)
+                    info[taxi_name].setdefault('last_performed_actions', []).append(new_action_str)
 
                 taxi = self.taxis_names.index(taxi_name)
                 reward = reward_utils.partial_closest_path_reward(self.state, 'step')  # Default reward
@@ -654,7 +682,7 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
                                                                            view_len=self.view_len,
                                                                            domain_map=self.desc)
         return obs, \
-               rewards, self.dones, {}
+               rewards, self.dones, info
 
     def render(self):
         render(self.desc.copy(), self.state, self.num_taxis, self.collided, self.last_action,

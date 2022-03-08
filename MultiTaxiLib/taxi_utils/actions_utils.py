@@ -2,7 +2,7 @@
 This file contains the actual performing of actions.
 It was created in order to clean the environment clean and short as possible.
 """
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 import numpy as np
 from MultiTaxiLib.taxi_utils import basic_utils
@@ -295,3 +295,64 @@ def refuel_taxi(state: list, current_fuel: int, current_reward: int, taxi: int, 
         reward = reward_method(state, 'bad_refuel')
 
     return reward, fuel
+
+
+class StochasticActionFunction:
+    """
+    A function class that uses a pre-defined action probability distribution to determine action outcomes.
+    """
+
+    def __init__(self, probs_dict: Dict[str, Dict[str, float]]):
+        """
+        Initialize the function with a discrete probability distribution using a dictionary of dictionaries.
+        Args:
+            probs_dict: a dictionary of dictionaries defining a conditional probability distribution like so:
+                            probs_dict[desired_action][output_aciton] = p(output_aciton|desired_action)
+                        The dictionary can have missing values. Where the distribution is not defined, we assume a
+                        deterministic action, i.e.
+                            p(desired_action|desired_action) = 1
+                        If a distribution is provided for some action, all probabilities must sum to 1.
+                        Example:
+                            >>> action_dist = {
+                            >>>     'north': {'north': 0.7, 'east': 0.15, 'west': 0.15},
+                            >>>     'south': {'south': 0.7, 'east': 0.15, 'west': 0.15}
+                            >>> }
+                            >>> f = StochasticActionFunction(action_dist)
+                        In the above example, choosing to perform 'north' or 'south' actions have a 15% chance to
+                        perform the 'east' action and a 15% chance to perform 'west' action instead of the given
+                        north/south action. All other actions are performed as as expected.
+        """
+        self.probs_dict = probs_dict
+
+        # iterate all actions to check the conditional distributions' validity.
+        for action in self.probs_dict:
+
+            # list conditional probabilities for `action`
+            action_probs = list(probs_dict[action].values())
+
+            # check that all probabilities are between 0 and 1
+            if not all(0 <= p <= 1 for p in action_probs):
+                raise ValueError(f'Bad probability distribution for action {action}: '
+                                 f'values must be in [0, 1], but got {probs_dict[action]}')
+
+            # check that the sum is exactly 1
+            probs_sum = np.sum(action_probs)
+            if probs_sum != 1:
+                raise ValueError(f'Bad probability distribution for action {action}: '
+                                 f'sum of probabilities is greater than 1: sum({probs_dict[action]}) = {probs_sum}')
+
+    def __call__(self, chosen_action):
+        """
+        chooses an action based on the instance's stochastic distribution (the `probs_dict` property).
+        Args:
+            chosen_action: the action key
+        """
+        # skip actions not present in the given `probs_dict` parameter.
+        if chosen_action not in self.probs_dict or not self.probs_dict[chosen_action]:
+            return chosen_action
+
+        # create a sequence of possible actions and corresponding probabilities.
+        possible_actions, action_probs = zip(*self.probs_dict[chosen_action].items())
+
+        # sample one of the possible actions, weighted by their given probabilities.
+        return np.random.choice(possible_actions, p=action_probs)
