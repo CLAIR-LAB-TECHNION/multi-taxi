@@ -537,7 +537,7 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
 
                     # log desired and performed actions for debugging
                     info[taxi_name].setdefault('last_chosen_actions', []).append(action_str)
-                    info[taxi_name].setdefault('last_performed_actions', []).append(new_action_str)
+                    info[taxi_name].setdefault('last_performed_transitions', []).append(new_action_str)
 
                 taxi = self.taxis_names.index(taxi_name)
                 reward = self.reward_method(self.state, 'step')  # Default reward
