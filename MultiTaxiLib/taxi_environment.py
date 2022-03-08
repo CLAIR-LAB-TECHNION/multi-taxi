@@ -171,7 +171,7 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
         self.current_step = 0
         self.is_infinite_fuel = False
         if max_fuel is None:
-            self.max_fuel = [0] * num_taxis
+            self.max_fuel = [float('inf')] * num_taxis
             self.is_infinite_fuel = True
         else:
             self.max_fuel = max_fuel
@@ -295,7 +295,7 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
 
         """
         locations_sizes = [self.num_rows, self.num_columns]
-        fuel_size = [max(self.max_fuel) + 1]
+        fuel_size = [] if self.is_infinite_fuel else [max(self.max_fuel) + 1]
         passengers_status_size = [self.num_taxis + 3]
         dimensions_sizes = []
 

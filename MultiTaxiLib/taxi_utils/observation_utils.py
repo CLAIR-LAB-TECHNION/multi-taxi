@@ -66,7 +66,8 @@ def get_status_vector_observation(state: list, agent_name: str, taxis_names: lis
                 observations += taxis[index].copy()
 
     # observations += [0, 0] * (num_taxis - 1) + [fuels[agent_index]] + [0] * (num_taxis - 1) + passengers_information
-    observations += [fuels[agent_index]] + passengers_information
+    fuel_obs = [fuels[agent_index]] if fuels[agent_index] != float('inf') else []
+    observations += fuel_obs + passengers_information
     observations = np.reshape(observations, -1)
 
     return observations
