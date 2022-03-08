@@ -1,6 +1,6 @@
 ## MutliTaxiEnv
 
-The environment implemented in [MultiTaxiEnv](https://github.com/ofirAbu/MultiTaxiLib/blob/master/MultiTaxiLabProject.pdf).
+The environment implemented in [MultiTaxiEnv](https://github.com/sarah-keren/multi-taxi/blob/main/MultiTaxiLabProject.pdf).
 Allows for __easy to set up__ Planning and MARL experiments.
 Main features:
 1. Can control the rewards table.

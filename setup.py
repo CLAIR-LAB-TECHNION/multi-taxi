@@ -13,15 +13,15 @@ from setuptools import find_packages, setup, Command
 
 # Package meta-data.
 NAME = 'MultiTaxiLib'
-DESCRIPTION = 'My short description for my project.'
-URL = 'https://github.com/ofirAbu/MultiTaxiLib/'
-EMAIL = 'ofir.abu@mail.huji.ac.il'
-AUTHOR = 'Ofir Abu'
+DESCRIPTION = 'A multi-agent adaptation of the OpenAI gym taxi environment https://gym.openai.com/envs/Taxi-v3/'
+URL = 'https://github.com/sarah-keren/multi-taxi'
+EMAIL = 'sarahk@technion.ac.il'
+AUTHOR = 'Sarah Keren'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.1.0'
+VERSION = '0.0.0'
 
 # What packages are required for this module to be executed?
-REQUIRED = ['numpy>=1.10.4', 'gym', 'ray', 'ray[rllib]']
+REQUIRED = ['numpy>=1.10.4', 'gym==0.22.0', 'ray==1.10.0', 'ray[rllib]']
 
 # What packages are optional?
 EXTRAS = {
