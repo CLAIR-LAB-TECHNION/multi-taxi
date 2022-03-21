@@ -230,7 +230,7 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
         self.passengers_locations = basic_utils.get_array_as_list_type(self.passengers_locations)
 
         self.num_taxis = num_taxis
-        self.taxis_names = ["taxi_" + str(index + 1) for index in range(num_taxis)]
+        self.taxis_names = ["taxi_" + str(index) for index in range(num_taxis)]
 
         # initialize stochastic actions function or function dict.
         if isinstance(stochastic_action_function, dict):  # dict input

@@ -172,7 +172,7 @@ def render(domain_map: list, state: list, num_taxis: int, collided: np.ndarray, 
         output = [moves[i] for i in np.array(list(last_action.values())).reshape(-1)]
         outfile.write("  ({})\n".format(' ,'.join(output)))
     for i, taxi in enumerate(taxis):
-        outfile.write("Taxi{}-{}: Fuel: {}, Location: ({},{}), Collided: {}\n".format(i + 1, colors[i].upper(),
+        outfile.write("Taxi{}-{}: Fuel: {}, Location: ({},{}), Collided: {}\n".format(i, colors[i].upper(),
                                                                                       fuels[i], taxi[0], taxi[1],
                                                                                       collided[i] == 1))
     for i, location in enumerate(passengers_locations):
