@@ -5,8 +5,8 @@ It was created in order to clean the environment clean and short as possible.
 from typing import Optional, List, Dict
 
 import numpy as np
-from MultiTaxiLib.taxi_utils import basic_utils
-from MultiTaxiLib.taxi_utils.basic_utils import is_there_a_path
+from multi_taxi.taxi_utils import basic_utils
+from multi_taxi.taxi_utils.basic_utils import is_there_a_path
 
 
 def engine_is_off_actions(state: list, action: str, taxi: int, reward_method: callable, engine_status_list: list) -> (int, list):

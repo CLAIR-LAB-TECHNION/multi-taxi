@@ -5,7 +5,7 @@ The environment is passed a function via the control_config.py file, and uses th
 turn.
 The different reward functions are implemented in this file.
 """
-from MultiTaxiLib.taxi_utils import basic_utils
+from multi_taxi.taxi_utils import basic_utils
 
 
 def partial_closest_path_reward(state: list, basic_reward_str: str, rewards_table, taxi_index: int = None,

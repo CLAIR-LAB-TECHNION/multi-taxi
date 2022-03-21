@@ -4,7 +4,7 @@ This file encapsulates all relevant rendering functions and their utils (both gr
 
 from typing import Optional
 import numpy as np
-from MultiTaxiLib.config import COLOR_MAP
+from multi_taxi.config import COLOR_MAP
 import matplotlib.pyplot as plt
 from gym.utils import colorize
 from io import StringIO

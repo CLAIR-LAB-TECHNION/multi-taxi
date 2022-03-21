@@ -1,6 +1,6 @@
 from gym.spaces import MultiDiscrete
 
-from MultiTaxiLib.taxi_environment import TaxiEnv, orig_MAP, simple_MAP, MAP2
+from multi_taxi.taxi_environment import TaxiEnv, orig_MAP, simple_MAP, MAP2
 
 
 def check_observation_space_validity(taxi_env_params, expected_observation_space):

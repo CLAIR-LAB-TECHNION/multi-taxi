@@ -8,13 +8,13 @@ from gym.utils import seeding
 import numpy as np
 from ray import rllib
 
-from MultiTaxiLib.config import (TAXI_ENVIRONMENT_REWARDS, BASE_AVAILABLE_ACTIONS, ALL_ACTIONS_NAMES,
-                                 PICKUP_ONLY_TAXI_ENVIRONMENT_REWARDS)
+from multi_taxi.config import (TAXI_ENVIRONMENT_REWARDS, BASE_AVAILABLE_ACTIONS, ALL_ACTIONS_NAMES,
+                               PICKUP_ONLY_TAXI_ENVIRONMENT_REWARDS)
 from gym.spaces import MultiDiscrete, Box
 
-from MultiTaxiLib.taxi_utils import actions_utils, observation_utils, basic_utils, reward_utils, rendering_utils
-from MultiTaxiLib.taxi_utils.rendering_utils import render
-from MultiTaxiLib.taxi_utils.termination_utils import get_done_dictionary
+from multi_taxi.taxi_utils import actions_utils, observation_utils, basic_utils, reward_utils, rendering_utils
+from multi_taxi.taxi_utils.rendering_utils import render
+from multi_taxi.taxi_utils.termination_utils import get_done_dictionary
 
 MAP2 = [
     "+-------+",

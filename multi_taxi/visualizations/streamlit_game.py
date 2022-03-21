@@ -5,9 +5,9 @@ dir2 = os.path.abspath('/home/ofir/PycharmProjects/DFC/Domains')
 dir1 = os.path.dirname(dir2)
 if not dir1 in sys.path: sys.path.append(dir1)
 
-from MultiTaxiLib.taxi_environment import TaxiEnv
+from multi_taxi.taxi_environment import TaxiEnv
 import matplotlib.pyplot as plt
-from MultiTaxiLib.taxi_utils import rendering_utils
+from multi_taxi.taxi_utils import rendering_utils
 from contextlib import contextmanager, redirect_stdout
 from io import StringIO
 import streamlit as st

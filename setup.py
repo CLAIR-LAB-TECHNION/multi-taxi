@@ -12,7 +12,7 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = 'MultiTaxiLib'
+NAME = 'multi_taxi'
 DESCRIPTION = 'A multi-agent adaptation of the OpenAI gym taxi environment https://gym.openai.com/envs/Taxi-v3/'
 URL = 'https://github.com/sarah-keren/multi-taxi'
 EMAIL = 'sarahk@technion.ac.il'

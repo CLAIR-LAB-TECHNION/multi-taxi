@@ -1,5 +1,5 @@
-from MultiTaxiLib.taxi_environment import TaxiEnv
-from MultiTaxiLib.taxi_utils.rendering_utils import map2rgb
+from multi_taxi.taxi_environment import TaxiEnv
+from multi_taxi.taxi_utils.rendering_utils import map2rgb
 import random
 
 from gym.spaces import MultiDiscrete
