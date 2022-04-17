@@ -114,8 +114,12 @@ def get_current_map_with_agents(domain_map: list, state: list, num_taxis: int, c
         else:  # Passenger isn't in a taxi
             # Coloring passenger's coordinates on the map
             pi, pj = passengers_start_coordinates[i]
-            out[1 + pi][2 * pj + 1] = colorize(out[1 + pi][2 * pj + 1], 'green', bold=True)
+            out[1 + pi][2 * pj + 1] = colorize('P', colors[i], bold=True)
             colored[location - 2] = True
+
+    for i, (di, dj) in enumerate(destinations):
+        if passengers_locations[i] != -1:
+            out[1 + di][2 * dj + 1] = colorize('D', colors[i], bold=True)
 
     for i, taxi in enumerate(taxis):
         if collided[i] == 0:  # Taxi isn't collided
