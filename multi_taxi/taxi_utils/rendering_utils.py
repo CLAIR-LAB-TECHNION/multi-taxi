@@ -76,7 +76,8 @@ def plot_window_of_observation(view_len: int, taxis_locations: list) -> None:
     view_len -= 1
 
 
-def get_current_map_with_agents(domain_map: list, state: list, num_taxis: int, collided: np.ndarray) -> np.ndarray:
+def get_current_map_with_agents(domain_map: list, state: list, num_taxis: int, collided: np.ndarray,
+                                pickup_only: bool) -> np.ndarray:
     """
     Returns the current (with agents movements) asci map in the numpy format
     Args:
@@ -117,9 +118,10 @@ def get_current_map_with_agents(domain_map: list, state: list, num_taxis: int, c
             out[1 + pi][2 * pj + 1] = colorize('P', colors[i], bold=True)
             colored[location - 2] = True
 
-    for i, (di, dj) in enumerate(destinations):
-        if passengers_locations[i] != -1:
-            out[1 + di][2 * dj + 1] = colorize('D', colors[i], bold=True)
+    if not pickup_only:
+        for i, (di, dj) in enumerate(destinations):
+            if passengers_locations[i] != -1:
+                out[1 + di][2 * dj + 1] = colorize('D', colors[i], bold=True)
 
     for i, taxi in enumerate(taxis):
         if collided[i] == 0:  # Taxi isn't collided
@@ -157,7 +159,7 @@ def render(domain_map: list, state: list, num_taxis: int, collided: np.ndarray, 
     """
     outfile = StringIO() if mode == 'ansi' else sys.stdout
 
-    out = get_current_map_with_agents(domain_map, state, num_taxis, collided)
+    out = get_current_map_with_agents(domain_map, state, num_taxis, collided, pickup_only)
     outfile.write("\n".join(["".join(row) for row in out]) + "\n")
 
     taxis, fuels, passengers_start_coordinates, destinations, passengers_locations = state
