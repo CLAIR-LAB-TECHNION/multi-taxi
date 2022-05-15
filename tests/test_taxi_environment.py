@@ -14,8 +14,8 @@ from ray.rllib.policy.policy import PolicySpec
 def test_reset():
     obs_image = TaxiEnv(observation_type='image').reset()
     obs_symbolic = TaxiEnv().reset()
-    assert obs_image['taxi_1'].shape == (5, 9, 3)
-    assert obs_symbolic['taxi_1'].shape == (7,)
+    assert obs_image['taxi_0'].shape == (5, 9, 3)
+    assert obs_symbolic['taxi_0'].shape == (7,)
 
 
 def test_map2rgb_fuel_station_bag():
@@ -48,7 +48,7 @@ def test_able_to_run_rllib_agents():
         return PolicySpec(config=config)
 
     # Setup PPO with an ensemble of `num_policies` different policies.
-    policies = {"taxi_{}".format(i + 1): gen_policy(i) for i in range(num_policies)}
+    policies = {"taxi_{}".format(i): gen_policy(i) for i in range(num_policies)}
     policy_ids = list(policies.keys())
 
     def policy_mapping_fn(agent_id, episode, worker, **kwargs):
