@@ -1,6 +1,9 @@
+from multi_taxi.taxi_utils import basic_utils
 
-def get_done_dictionary(current_done_dictionary: dict, passengers_status: list, fuel_tanks: list,
-                        collision_status: dict, is_infinite_fuel: bool, taxi_names: list, pickup_only: bool) -> dict:
+
+def get_done_dictionary(current_done_dictionary: dict, taxi: int, taxis_locations: list, fuel_stations: list,
+                        fuel_type_list: list, desc, passengers_status: list, fuel_tanks: list, collision_status: dict,
+                        is_infinite_fuel: bool, taxi_names: list, pickup_only: bool) -> dict:
     """
     Get passengers statuses, fuel indications, collided indications and retrieve the updated done dictionary
     Args:
@@ -18,7 +21,9 @@ def get_done_dictionary(current_done_dictionary: dict, passengers_status: list, 
 
     if not is_infinite_fuel:
         for i, fuel in enumerate(fuel_tanks):
-            if fuel <= 0:
+            if fuel <= 0 and not basic_utils.at_valid_fuel_station(taxi, taxis_locations, fuel_stations,
+                                                                   desc.copy().tolist(),
+                                                                   fuel_type_list):
                 updated_dones[taxi_names[i]] = True
 
     for i, collided in enumerate(collision_status):

@@ -549,8 +549,10 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
                 # passengers_start_locations and destinations: [[i, j] ... [i, j]]
                 # passengers_status: [[1, 2, taxi_index+2] ... [1, 2, taxi_index+2]], 1 - delivered
                 taxis_locations, fuels, passengers_start_locations, destinations, passengers_status = self.state
-                self.dones = get_done_dictionary(self.dones, passengers_status, fuels, self.collided,
-                                                 self.is_infinite_fuel, self.taxis_names, self.pickup_only)
+                self.dones = get_done_dictionary(self.dones, taxi, taxis_locations, self.fuel_stations,
+                                                 self.fuel_type_list, self.desc, passengers_status, fuels,
+                                                 self.collided, self.is_infinite_fuel, self.taxis_names,
+                                                 self.pickup_only)
                 # done = all(loc == 1 for loc in passengers_status)
                 if self.dones['__all__']:
                     continue
@@ -684,8 +686,10 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
                                                                                 self.max_fuel,
                                                                                 self.reward_method)
                 self.state[-1] = passengers_status
-                self.dones = get_done_dictionary(self.dones, passengers_status, fuels, self.collided,
-                                                 self.is_infinite_fuel, self.taxis_names, self.pickup_only)
+                self.dones = get_done_dictionary(self.dones, taxi, taxis_locations, self.fuel_stations,
+                                                 self.fuel_type_list, self.desc, passengers_status, fuels,
+                                                 self.collided, self.is_infinite_fuel, self.taxis_names,
+                                                 self.pickup_only)
 
         obs = {}
         for i, taxi_id in enumerate(action_dict.keys()):
