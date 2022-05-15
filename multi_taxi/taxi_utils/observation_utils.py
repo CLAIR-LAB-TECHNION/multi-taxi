@@ -110,7 +110,7 @@ def get_status_vector_observation_with_passenger_allocation(state: list, agent_n
 
 
 def get_image_obs_by_agent_id(agent_id: int, state: list, num_taxis: int, collided: np.ndarray, view_len: int,
-                              domain_map: list) -> np.ndarray:
+                              domain_map: list, pickup_only: bool) -> np.ndarray:
     """
     Returns an RGB image of the observation window of the current agent"
     Args:
@@ -126,7 +126,7 @@ def get_image_obs_by_agent_id(agent_id: int, state: list, num_taxis: int, collid
     """
     taxis_locations, _, passengers_start_locations, destinations, passengers_status = state
     rgb_map = rendering_utils.map2rgb(state, rendering_utils.get_current_map_with_agents(
-        domain_map, state, num_taxis, collided))
+        domain_map, state, num_taxis, collided, pickup_only))
 
     location = taxis_locations[agent_id]
     row = location[0] + 1

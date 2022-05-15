@@ -426,7 +426,8 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
                                                                                     num_taxis=self.num_taxis,
                                                                                     collided=self.collided,
                                                                                     view_len=self.view_len,
-                                                                                    domain_map=self.desc)
+                                                                                    domain_map=self.desc,
+                                                                                    pickup_only=self.pickup_only)
         return observations
 
     def _add_custom_dropoff_for_passengers(self) -> (list, list):
@@ -700,7 +701,8 @@ class TaxiEnv(rllib.env.MultiAgentEnv):
                                                                            num_taxis=self.num_taxis,
                                                                            collided=self.collided,
                                                                            view_len=self.view_len,
-                                                                           domain_map=self.desc)
+                                                                           domain_map=self.desc,
+                                                                           pickup_only=self.pickup_only)
         return obs, \
                rewards, self.dones, info
 

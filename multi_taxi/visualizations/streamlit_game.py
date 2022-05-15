@@ -35,7 +35,7 @@ def environment_snapshot(environment_instance: TaxiEnv) -> None:
     rendering_utils.render(environment_instance.desc.tolist(), environment_instance.state,
                            environment_instance.num_taxis, environment_instance.collided,
                            environment_instance.last_action, environment_instance.action_index_dictionary,
-                           environment_instance.dones)
+                           environment_instance.dones, pickup_only=environment_instance.pickup_only)
 
     st.write("Image world representation:")
     img = rendering_utils.map2rgb(environment_instance.state, environment_instance.desc.astype(str))
