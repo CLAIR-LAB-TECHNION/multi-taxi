@@ -112,15 +112,16 @@ def get_current_map_with_agents(domain_map: list, state: list, num_taxis: int, c
             out[1 + taxi_row][2 * taxi_col + 1] = colorize(
                 out[1 + taxi_row][2 * taxi_col + 1], colors[location - 3], highlight=True, bold=True)
             colored[location - 3] = True
-        else:  # Passenger isn't in a taxi
+        elif location == 2:  # Passenger is waiting
             # Coloring passenger's coordinates on the map
             pi, pj = passengers_start_coordinates[i]
             out[1 + pi][2 * pj + 1] = colorize('P', colors[i], bold=True)
             colored[location - 2] = True
+        # else: passenger arrived in destination
 
     if not pickup_only:
         for i, (di, dj) in enumerate(destinations):
-            if passengers_locations[i] != -1:
+            if passengers_locations[i] != 1:
                 out[1 + di][2 * dj + 1] = colorize('D', colors[i], bold=True)
 
     for i, taxi in enumerate(taxis):
