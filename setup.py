@@ -21,7 +21,7 @@ REQUIRES_PYTHON = '>=3.6.0'
 VERSION = '0.0.0'
 
 # What packages are required for this module to be executed?
-REQUIRED = ['numpy>=1.10.4', 'gym==0.22.0', 'ray==1.10.0', 'ray[rllib]']
+REQUIRED = ['numpy>=1.10.4', 'gym==0.22.0', 'ray==1.10.0', 'ray[rllib]', 'protobuf==3.20.0']
 
 # What packages are optional?
 EXTRAS = {
