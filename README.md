@@ -1,26 +1,51 @@
-# MutliTaxiEnv
+# Multi Taxi Environment
 
-The environment implemented in [MultiTaxiEnv](https://github.com/sarah-keren/multi_taxi/blob/main/MultiTaxiLabProject.pdf).
-Allows for __easy to set up__ Planning and MARL experiments.
-Main features:
-1. Can control the rewards table.
-2. Can switch between symbolic imaged observations.
-3. Can apply constraints in the shape of passengers' and fuel's capacity.
+<p>
+    <img src="images/taxi_env.png" width="500" alt="taxi env example map"/>
+</p>
 
-For example of use - skim through the [demonstration notebook](https://github.com/sarah-keren/multi_taxi/blob/0.0.0/MultiTaxiEnvDemo.ipynb).
+`multi_taxi` is a highly configurable multi-agent environment, based on [gym](https://www.gymlibrary.ml/)'s
+[Taxi environment](https://www.gymlibrary.ml/environments/toy_text/taxi/), that adheres to the
+[PettingZoo](https://www.pettingzoo.ml/) API. Some configurations include:
+1. the number of taxis and passengers in the environment (limited to the size of the map)
+2. the domain map itself
+3. the environment objective
+4. individual taxi configurations:
+   1. reward function
+   2. action and observation space
+   3. passenger and fuel capacity
+5. and so much more!
 
-Simply installable via:
+For a quickstart guide and a deeper dive into the environment and its configuraions, please consult our
+[demonstration notebook](https://github.com/sarah-keren/multi_taxi/blob/0.1.0/MultiTaxiEnvDemo.ipynb), also available in
+[colab](https://colab.research.google.com/github/sarah-keren/multi_taxi/blob/0.1.0/MultiTaxiEnvDemo.ipynb). The
+[project paper](https://github.com/sarah-keren/multi_taxi/blob/main/MultiTaxiLabProject.pdf) is also available. This is
+based on this [repo](https://github.com/ofirAbu/MultiTaxiLib).
+ 
+# Installation
+The easiest way to install `multi_taxi` is directly from the git repository using `pip`. Here is how to install the
+latest stable version:
+```bash
+pip install "git+https://github.com/sarah-keren/multi_taxi@0.1.0"
+```
+
+You can also download our latest updates by not specifying a tag, like so:
+```bash
+pip install "git+https://github.com/sarah-keren/multi_taxi"
+```
+
+
+If you are seeking the legacy version, which is based on the [RLLib](https://docs.ray.io/en/latest/rllib/index.html)
+API, please install version `0.0.0` like so:
 ```bash
 pip install "git+https://github.com/sarah-keren/multi_taxi@0.0.0"
 ```
-
-Code originated from [repo](https://github.com/ofirAbu/MultiTaxiLib), by Ofir Abu during joint work involving MARL Resilience. Feel free to give a star in the original repo if you find the project useful :)
 
 # Citation
 To cite this repository in academic works or any other purpose, please use the following citation:
 ```
 @misc{SSDOpenSource,
-    author = {[Ofir Abu, Guy Azran, Sarah Keren]},
+    author = {[Guy Azran, Sarah Keren]},
     title = {Multi Taxi: A Modular Setting for Multi-Agent Systems Experiments},
     year = {2021},
     publisher = {GitHub},

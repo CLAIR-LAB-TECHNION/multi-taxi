@@ -1,0 +1,114 @@
+{
+    "single_taxi_simple": {},
+    "single_taxi_two_passenger": {
+        "num_passengers": 2
+    },
+    "single_taxi_three_passenger": {
+        "num_passengers": 3
+    },
+    "single_taxi_four_passenger": {
+        "num_passengers": 4
+    },
+    "single_taxi_five_passenger": {
+        "num_passengers": 5
+    },
+    "single_taxi_two_passenger_pickup_only": {
+        "num_passengers": 2,
+        "pickup_only": true
+    },
+    "single_taxi_three_passenger_pickup_only": {
+        "num_passengers": 3,
+        "pickup_only": true
+    },
+    "single_taxi_four_passenger_pickup_only": {
+        "num_passengers": 4,
+        "pickup_only": true
+    },
+    "single_taxi_five_passenger_pickup_only": {
+        "num_passengers": 5,
+        "pickup_only": true
+    },
+    "single_taxi_fuel": {
+        "max_fuel": 100
+    },
+    "single_taxi_engine_control": {
+        "has_engine_control": true
+    },
+    "single_taxi_specify_pickup": {
+        "num_passengers": 3,
+        "specify_passenger_pickup": true
+    },
+    "single_taxi_specify_dropoff": {
+        "num_passengers": 3,
+        "specify_passenger_dropoff": true
+    },
+    "single_taxi_specify_pickup_and_dropoff": {
+        "num_passengers": 3,
+        "specify_passenger_pickup": true,
+        "specify_passenger_dropoff": true
+    },
+    "single_taxi_small_fuel_map": {
+        "domain_map": "SMALL_FUEL_MAP"
+    },
+    "single_taxi_simple_small_map_no_obs": {
+        "domain_map": "SMALL_NO_OBS_MAP"
+    },
+
+    "two_taxi_simple": {
+        "num_taxis": 2
+    },
+    "three_taxi_simple": {
+        "num_taxis": 3
+    },
+    "four_taxi_simple": {
+        "num_taxis": 4
+    },
+    "five_taxi_simple": {
+        "num_taxis": 5
+    },
+
+    "two_taxi_see_each_other": {
+        "num_taxis": 2,
+        "can_see_other_taxi_info": true
+    },
+    "three_taxi_see_each_other": {
+        "num_taxis": 3,
+        "can_see_other_taxi_info": true
+    },
+    "four_taxi_see_each_other": {
+        "num_taxis": 4,
+        "can_see_other_taxi_info": true
+    },
+    "five_taxi_see_each_other": {
+        "num_taxis": 5,
+        "can_see_other_taxi_info": true
+    },
+
+    "two_taxi_fuel_limit": {
+        "num_taxis": 2,
+        "max_fuel": [10, 5]
+    },
+    "three_taxi_fuel_limit": {
+        "num_taxis": 3,
+        "max_fuel": [15, 25, 99]
+    },
+    "two_taxi_small_map": {
+        "num_taxis": 2,
+        "domain_map": "SMALL_MAP"
+    },
+    "two_taxi_see_each_other_small_map": {
+        "num_taxis": 2,
+        "domain_map": "SMALL_MAP",
+        "can_see_other_taxi_info": true
+    },
+    "three_taxi_multi_observation": {
+        "num_taxis": 3,
+        "num_passengers": 2,
+        "max_fuel": [30, 50, null],
+        "max_capacity": null,
+        "specify_passenger_pickup": true,
+        "has_standby_action": [true, false, false],
+        "observation_type": ["symbolic", "image", "mixed"],
+        "can_see_other_taxi_info": false
+    }
+}

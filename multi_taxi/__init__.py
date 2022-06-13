@@ -1,2 +1,6 @@
-from .taxi_environment import TaxiEnv as MultiTaxiEnv
-from . import utils
+from . import wrappers
+from .env import multi_taxi_v0, single_taxi_v0, config
+from .utils.types import FuelType, ObservationType, Event, Action
+from .world import maps
+
+__version__ = '0.1.0'
