@@ -7,11 +7,11 @@ Main features:
 2. Can switch between symbolic imaged observations.
 3. Can apply constraints in the shape of passengers' and fuel's capacity.
 
-For example of use - skim through the [demonstration notebook](https://github.com/sarah-keren/multi_taxi/blob/main/MultiTaxiEnvDemo.ipynb).
+For example of use - skim through the [demonstration notebook](https://github.com/sarah-keren/multi_taxi/blob/0.0.0/MultiTaxiEnvDemo.ipynb).
 
 Simply installable via:
 ```bash
-pip install "git+https://github.com/sarah-keren/multi_taxi"
+pip install "git+https://github.com/sarah-keren/multi_taxi@0.0.0"
 ```
 
 Code originated from [repo](https://github.com/ofirAbu/MultiTaxiLib), by Ofir Abu during joint work involving MARL Resilience. Feel free to give a star in the original repo if you find the project useful :)
