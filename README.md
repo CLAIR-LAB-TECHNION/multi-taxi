@@ -25,7 +25,7 @@ available in
 The easiest way to install `multi_taxi` is directly from the git repository using `pip`. Here is how to install the
 latest stable version:
 ```bash
-pip install "git+https://github.com/sarah-keren/multi_taxi@0.1.0"
+pip install "git+https://github.com/sarah-keren/multi_taxi@0.1.1"
 ```
 
 You can also download our latest updates by not specifying a tag, like so:
