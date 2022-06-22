@@ -19,7 +19,8 @@
 For a quickstart guide and a deeper dive into the environment and its configuraions, please consult our
 [demonstration notebook](https://github.com/sarah-keren/multi_taxi/blob/main/notebooks/MultiTaxiEnvDemo.ipynb), also
 available in
-[colab](https://colab.research.google.com/github/sarah-keren/multi_taxi/blob/main/notebooks/MultiTaxiEnvDemo.ipynb).
+[colab](https://colab.research.google.com/github/sarah-keren/multi_taxi/blob/main/notebooks/MultiTaxiEnvDemo.ipynb) and
+[nbviewer](https://nbviewer.org/github/sarah-keren/multi_taxi/blob/main/notebooks/MultiTaxiEnvDemo.ipynb).
  
 # Installation
 The easiest way to install `multi_taxi` is directly from the git repository using `pip`. Here is how to install the
