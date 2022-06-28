@@ -54,5 +54,6 @@ To cite this repository in academic works or any other purpose, please use the f
     year = {2021},
     publisher = {GitHub},
     note = {GitHub repository},
+    url = {https://github.com/sarah-keren/multi_taxi}
 }
 ```
