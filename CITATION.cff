@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Azran"
+  given-names: "Guy"
+- family-names: "Keren"
+  given-names: "Sarah"
+title: "Multi Taxi: A Modular Setting for Multi-Agent Systems Experiments"
+version: 0.1.1
+date-released: 2022-06-22
+url: "https://github.com/sarah-keren/multi_taxi"
