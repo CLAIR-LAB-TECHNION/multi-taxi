@@ -46,14 +46,16 @@ This library is based on [MultiTaxiLib](https://github.com/ofirAbu/MultiTaxiLib)
 implementation paper can be found [here](https://github.com/ofirAbu/MultiTaxiLib/blob/master/MultiTaxiLabProject.pdf). 
 
 # Citation
-To cite this repository in academic works or any other purpose, please use the following citation:
-```
-@misc{SSDOpenSource,
-    author = {[Guy Azran, Sarah Keren]},
-    title = {Multi Taxi: A Modular Setting for Multi-Agent Systems Experiments},
-    year = {2021},
-    publisher = {GitHub},
-    note = {GitHub repository},
-    url = {https://github.com/sarah-keren/multi_taxi}
+To cite this repository in academic works or any other purpose, please use the following BibTeX citation:
+```BibTeX
+@software{Azran_Multi_Taxi_A_2022,
+    author = {Azran, Guy and Keren, Sarah},
+    month = {6},
+    title = {{Multi Taxi: A Modular Setting for Multi-Agent Systems Experiments}},
+    url = {https://github.com/sarah-keren/multi_taxi},
+    version = {0.1.1},
+    year = {2022}
 }
 ```
+Alternatively, we offer a [CITATION.cff file](https://citation-file-format.github.io/) with GitHub and Zotero
+integration.
