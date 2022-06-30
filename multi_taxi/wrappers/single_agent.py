@@ -6,6 +6,10 @@ class SingleAgentParallelEnvToGymWrapper(BaseParallelWraper):
     A wrapper for single-agent parallel environments aligning the environments'
     API with OpenAI Gym.
     """
+    # gym API class variables
+    reward_range = (-float("inf"), float("inf"))
+    spec = None
+
     def __init__(self, env):
         super().__init__(env)
 
