@@ -153,6 +153,7 @@ class MultiTaxiEnv(ParallelEnv):
                  has_standby_action: PerTaxiValue(bool) = None,
                  has_engine_control: PerTaxiValue(bool) = None,
                  engine_off_on_empty_tank: PerTaxiValue(bool) = None,
+                 can_refuel_without_fuel: PerTaxiValue(bool) = None,
                  can_collide: PerTaxiValue(bool) = None,
                  specify_passenger_pickup: PerTaxiValue(bool) = None,
                  specify_passenger_dropoff: PerTaxiValue(bool) = None,
@@ -211,6 +212,8 @@ class MultiTaxiEnv(ParallelEnv):
             engine_off_on_empty_tank: if `True`, if the taxi runs out of fuel and does not refuel at that step, the
                                       taxi's engine will turn off. This parameter is ignored if the taxi does not have
                                       engine control.
+            can_refuel_without_fuel: if `False`, a taxi is considered dead when its fuel capacity reaches 0. if `True`,
+                                     a taxi with 0 fuel may still act if it is on a valid fuel station.
             can_collide: if `True`, the taxi becomes a collidable and may collide with other collidable taxis
             specify_passenger_pickup: if `True`, the taxi's "pickup" actions must indicate the exact passenger they
                                       intend to pick up. otherwise, a generic pickup action is used. generic pickup
@@ -300,6 +303,8 @@ class MultiTaxiEnv(ParallelEnv):
             # only allow this setting for taxis that have engine control
             k: v and self.has_engine_control[k] for k, v in self.engine_off_on_empty_tank.items()
         }
+        self.can_refuel_without_fuel = self.__per_taxi_single_or_list(can_refuel_without_fuel, bool,
+                                                                      config.DEFAULT_CAN_REFUEL_WITHOUT_FUEL)
         self.can_collide = self.__per_taxi_single_or_list(can_collide, bool, config.DEFAULT_CAN_COLLIDE)
 
         # if only one taxi can collide, then collisions are not possible
@@ -1018,7 +1023,8 @@ class MultiTaxiEnv(ParallelEnv):
                 (self.pickup_only and all(p.in_taxi for p in state.passengers)))  # 2
 
     def __taxi_stuck_without_fuel(self, taxi):
-        return taxi.empty_tank and not self.domain_map.at_fuel_station(taxi.location, taxi.fuel_type)
+        return taxi.empty_tank and not (self.domain_map.at_fuel_station(taxi.location, taxi.fuel_type) and
+                                        self.can_refuel_without_fuel[taxi.name])
 
     ###############################
     # End Done Checking Functions #
