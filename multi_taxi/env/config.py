@@ -14,6 +14,7 @@ DEFAULT_ALLOW_ARRIVED_PASSENGERS_ON_RESET = False
 DEFAULT_CLEAR_DEAD_TAXIS = False
 
 # taxi configuration defaults
+DEFAULT_MAX_STEPS = float('inf')
 DEFAULT_MAX_CAPACITY = float('inf')
 DEFAULT_MAX_FUEL = float('inf')
 DEFAULT_FUEL_TYPE = FuelType.FUEL

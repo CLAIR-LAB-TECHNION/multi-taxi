@@ -147,6 +147,7 @@ class MultiTaxiEnv(ParallelEnv):
                  clear_dead_taxis: bool = None,
 
                  # taxi configurations
+                 max_steps: PerTaxiValue(int) = None,
                  max_capacity: PerTaxiValue(int) = None,
                  max_fuel: PerTaxiValue(int) = None,
                  fuel_type: PerTaxiValue(FuelType) = None,
@@ -205,6 +206,7 @@ class MultiTaxiEnv(ParallelEnv):
             clear_dead_taxis: if `True`, taxis that can no longer act (i.e. dead) are completely removed from the
                               environment. otherwise, dead taxis remain in the environment, continue receiving rewards,
                               and can be collided into.
+            max_steps: determines the maximum number of actions a taxi can take at each reset.
             max_capacity: determines a taxi's maximum passenger capacity.
             max_fuel: determines a taxi's maximum fuel capacity
             fuel_type: determines a taxi's required fuel station for refueling
@@ -215,7 +217,7 @@ class MultiTaxiEnv(ParallelEnv):
                                       engine control.
             can_refuel_without_fuel: if `False`, a taxi is considered dead when its fuel capacity reaches 0. if `True`,
                                      a taxi with 0 fuel may still act if it is on a valid fuel station.
-            can_collide: if `True`, the taxi becomes a collidable and may collide with other collidable taxis
+            can_collide: if `True`, the taxi becomes a collidable and may collide with other collidable taxis.
             passenger_fumble: if `True`, all carried passengers are dropped off when the taxi dies at the location
                               of the taxi's death.
             specify_passenger_pickup: if `True`, the taxi's "pickup" actions must indicate the exact passenger they
@@ -290,6 +292,8 @@ class MultiTaxiEnv(ParallelEnv):
         self.agents = []
 
         # initialize taxi configurations with argument or default value
+        self.max_steps = self.__per_taxi_single_or_list(max_steps, int, config.DEFAULT_MAX_STEPS)
+        self.n_steps = 0
         if not pickup_only:
             self.max_capacity = self.__per_taxi_single_or_list(max_capacity, int, config.DEFAULT_MAX_CAPACITY)
         else:
@@ -383,6 +387,9 @@ class MultiTaxiEnv(ParallelEnv):
         # reset agents
         self.agents = self.possible_agents.copy()
 
+        # set steps counter to 0
+        self.n_steps = 0
+
         # initialize a random state
         taxis = self.__random_taxis()
         passengers = self.__random_passengers()
@@ -395,6 +402,8 @@ class MultiTaxiEnv(ParallelEnv):
         self.__np_random, _ = seeding.np_random(seed)
 
     def step(self, actions: dict):
+        self.n_steps += 1
+
         # use string actions for readability
         actions = {agent: self.__action_index_to_name[agent][action] for agent, action in actions.items()}
 
@@ -1021,7 +1030,8 @@ class MultiTaxiEnv(ParallelEnv):
         # taxi is dead before the end of the episode if:
         #   1. taxi has collided.
         #   2. taxi has run out of fuel and is not in a correct fuel station.
-        return taxi.collided or self.__taxi_stuck_without_fuel(taxi)
+        #   3. taxi has surpassed the maximum number of steps it can take
+        return taxi.collided or self.__taxi_stuck_without_fuel(taxi) or self.n_steps > self.max_steps[taxi.name]
 
     def __objective_achieved(self, state=None):
         if state is None:
