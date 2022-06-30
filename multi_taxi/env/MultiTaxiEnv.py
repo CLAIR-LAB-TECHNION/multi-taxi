@@ -380,7 +380,7 @@ class MultiTaxiEnv(ParallelEnv):
         self.__state = MultiTaxiEnvState(taxis, passengers)
 
         # return all observations
-        return self.observe_all()
+        return self.__observe_all()
 
     def seed(self, seed=None):
         self.__np_random, _ = seeding.np_random(seed)
@@ -404,7 +404,7 @@ class MultiTaxiEnv(ParallelEnv):
         self.__state = new_state
 
         # get new observations according to the current state
-        obs = self.observe_all()
+        obs = self.__observe_all()
 
         # remove done agents from live agents list
         for taxi_name, done in dones.items():
@@ -497,11 +497,12 @@ class MultiTaxiEnv(ParallelEnv):
     def observe_all(self):
         """
         gets all agent observations for the given state.
+        This is an API exposure of an inner method.
 
         Returns:
             a dictionary for all agent observations.
         """
-        return {agent: self.__observe(agent) for agent in self.agents}
+        return self.__observe_all()
 
     def get_observation_meanings(self, agent):
         """
@@ -1169,6 +1170,9 @@ class MultiTaxiEnv(ParallelEnv):
 
         # change action lists to dictionaries with index keys for readability
         return {taxi: {i: action for i, action in enumerate(actions_dict[taxi])} for taxi in actions_dict}
+
+    def __observe_all(self):
+        return {agent: self.__observe(agent) for agent in self.agents}
 
     def __observe(self, agent):
         # draw taxis in image in case case needed

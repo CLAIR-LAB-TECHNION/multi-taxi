@@ -54,12 +54,14 @@ class SingleTaxiWrapper(SingleAgentParallelEnvToGymWrapper):
 
         # rename original functions
         self.unwrapped.state_action_transitions_ = self.unwrapped.state_action_transitions
+        self.unwrapped.observe_all_ = self.unwrapped.observe_all
         self.unwrapped.get_observation_meanings_ = self.unwrapped.get_observation_meanings
         self.unwrapped.get_action_meanings_ = self.unwrapped.get_action_meanings
         self.unwrapped.get_action_map_ = self.unwrapped.get_action_map
 
         # set original name to wrapper overrides
         self.unwrapped.state_action_transitions = self.__state_action_transitions
+        self.unwrapped.observe_all = self.__observe_all
         self.unwrapped.get_observation_meanings = self.__get_observation_meanings
         self.unwrapped.get_action_meanings = self.__get_action_meanings
         self.unwrapped.get_action_map = self.__get_action_map
@@ -78,6 +80,9 @@ class SingleTaxiWrapper(SingleAgentParallelEnvToGymWrapper):
             single_agent_transitions.append((new_state, rewards, dones, infos))
 
         return single_agent_transitions
+
+    def __observe_all(self):
+        return next(iter(self.unwrapped.observe_all_().values()))
 
     def __get_observation_meanings(self):
         return self.unwrapped.get_observation_meanings_(self.possible_agents[0])
