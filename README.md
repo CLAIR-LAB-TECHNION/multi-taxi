@@ -26,7 +26,7 @@ available in
 The easiest way to install `multi_taxi` is directly from the git repository using `pip`. Here is how to install the
 latest stable version:
 ```bash
-pip install "git+https://github.com/sarah-keren/multi_taxi@0.1.1"
+pip install "git+https://github.com/sarah-keren/multi_taxi@0.2.0"
 ```
 
 You can also download our latest updates by not specifying a tag, like so:
@@ -50,10 +50,10 @@ To cite this repository in academic works or any other purpose, please use the f
 ```BibTeX
 @software{Azran_Multi_Taxi_A_2022,
     author = {Azran, Guy and Keren, Sarah},
-    month = {6},
+    month = {7},
     title = {{Multi Taxi: A Modular Setting for Multi-Agent Systems Experiments}},
     url = {https://github.com/sarah-keren/multi_taxi},
-    version = {0.1.1},
+    version = {0.2.0},
     year = {2022}
 }
 ```

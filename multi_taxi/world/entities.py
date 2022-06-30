@@ -2,7 +2,7 @@ from copy import copy, deepcopy
 from ..utils.types import Action
 
 PASSENGER_NOT_IN_TAXI = -1
-COLORS = ['yellow', 'red', 'white', 'green', 'cyan', 'blue', 'magenta', 'crimson']
+COLORS = ['yellow', 'red', 'white', 'green', 'cyan', 'blue', 'magenta']
 
 
 class Taxi:
