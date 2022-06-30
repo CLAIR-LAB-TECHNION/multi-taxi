@@ -45,6 +45,11 @@ class Taxi:
         self.passengers.remove(passenger)
         passenger.dropped_off()
 
+    def drop_all(self):
+        for p in self.passengers:
+            p.dropped_off()
+        self.passengers = {}
+
     def move(self, direction: Action, simulation=False):
         row, col = self.location
 

@@ -155,6 +155,7 @@ class MultiTaxiEnv(ParallelEnv):
                  engine_off_on_empty_tank: PerTaxiValue(bool) = None,
                  can_refuel_without_fuel: PerTaxiValue(bool) = None,
                  can_collide: PerTaxiValue(bool) = None,
+                 passenger_fumble: PerTaxiValue(bool) = None,
                  specify_passenger_pickup: PerTaxiValue(bool) = None,
                  specify_passenger_dropoff: PerTaxiValue(bool) = None,
                  reward_table: PerTaxiValue(Dict[Event, float]) = None,
@@ -215,6 +216,8 @@ class MultiTaxiEnv(ParallelEnv):
             can_refuel_without_fuel: if `False`, a taxi is considered dead when its fuel capacity reaches 0. if `True`,
                                      a taxi with 0 fuel may still act if it is on a valid fuel station.
             can_collide: if `True`, the taxi becomes a collidable and may collide with other collidable taxis
+            passenger_fumble: if `True`, all carried passengers are dropped off when the taxi dies at the location
+                              of the taxi's death.
             specify_passenger_pickup: if `True`, the taxi's "pickup" actions must indicate the exact passenger they
                                       intend to pick up. otherwise, a generic pickup action is used. generic pickup
                                       will pick up any passenger at the taxi's current location. if multiple passengers
@@ -314,6 +317,7 @@ class MultiTaxiEnv(ParallelEnv):
             k: v and collision_possible for k, v in self.can_collide.items()
         }
 
+        self.passenger_fumble = self.__per_taxi_single_or_list(passenger_fumble, bool, config.DEFAULT_PASSENGER_FUMBLE)
         self.specify_passenger_pickup = self.__per_taxi_single_or_list(specify_passenger_pickup, bool,
                                                                        config.DEFAULT_SPECIFY_PASSENGER_PICKUP)
         self.specify_passenger_dropoff = self.__per_taxi_single_or_list(specify_passenger_dropoff, bool,
@@ -768,10 +772,17 @@ class MultiTaxiEnv(ParallelEnv):
             if taxi.engine_on and taxi.empty_tank and self.engine_off_on_empty_tank[taxi.name]:
                 taxi.engine_on = False
 
+        self.__check_collisions(state, new_state, infos, rewards)
+
         # it is ok to be stuck without fuel if the objective is achieved at that step
         if not self.__objective_achieved(new_state):
             self.__check_stuck_without_fuel(new_state, infos, rewards)
-        self.__check_collisions(state, new_state, infos, rewards)
+
+        # drop all passengers of dead taxis if configured to do so
+        for taxi_name in self.agents:
+            if self.passenger_fumble[taxi_name] and self.__taxi_is_dead(taxi_name):
+                taxi = new_state.taxi_by_name[taxi_name]
+                taxi.drop_all()
 
         # set dones
         env_done = self.env_done(new_state)
