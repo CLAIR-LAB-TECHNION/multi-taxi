@@ -29,7 +29,7 @@ class SymbolicObservation(Enum):
     PASSENGER_DESTINATION_COL = 'passenger_{index}_destination_col'  # the destination column of the indexed passenger
     PASSENGER_ARRIVED = 'passenger_{index}_arrived'                 # indicates arrival of indexed passenger destination
     PASSENGER_IN_TAX = 'passenger_{p_index}_in_taxi_{t_index}'       # indicates if the indexed passenger is in the taxi
-    PASSENGER_PICKED_UP = 'passenger_{index}_picked_up'
+    PASSENGER_PICKED_UP = 'passenger_{index}_picked_up'              # an indicator for passenger pickup
 
 
 class ObstacleType(Enum):
@@ -56,6 +56,7 @@ class Event(Enum):
     BAD_FUEL = auto()                    # refuel performed at location with a fuel station of the wrong type
     USE_ENGINE_WHILE_NO_FUEL = auto()    # attempt to move while fuel capacity is at 0
     STUCK_WITHOUT_FUEL = auto()          # at current step fuel capacity dropped 0 and not on a correct fuel station
+    OUT_OF_TIME = auto()                 # environment has been running for more steps than the maximum steps for taxi
     HIT_OBSTACLE = auto()                # hit some obstacle in the domain map
     COLLISION = auto()                   # collision occurred at this step
     DEAD = auto()                        # taxi has collided in a past step and cannot act (replaces STEP)

@@ -293,7 +293,6 @@ class MultiTaxiEnv(ParallelEnv):
 
         # initialize taxi configurations with argument or default value
         self.max_steps = self.__per_taxi_single_or_list(max_steps, int, config.DEFAULT_MAX_STEPS)
-        self.n_steps = 0
         if not pickup_only:
             self.max_capacity = self.__per_taxi_single_or_list(max_capacity, int, config.DEFAULT_MAX_CAPACITY)
         else:
@@ -362,8 +361,9 @@ class MultiTaxiEnv(ParallelEnv):
             for k, fov in self.__per_taxi_single_or_list(field_of_view, int, config.DEFAULT_FIELD_OF_VIEW).items()
         }
 
-        # useful value to check if fuel considerations are required
+        # useful value to check if fuel and timestep considerations are required
         self.infinite_fuel = {taxi: f == float('inf') for taxi, f in self.max_fuel.items()}
+        self.infinite_steps = {taxi: s == float('inf') for taxi, s in self.max_steps.items()}
 
         # useful for checking if taxis must be sampled distinctly.
         # reset locations should be sampled distinctly if specified by the user or if all taxis can collide and
@@ -387,9 +387,6 @@ class MultiTaxiEnv(ParallelEnv):
         # reset agents
         self.agents = self.possible_agents.copy()
 
-        # set steps counter to 0
-        self.n_steps = 0
-
         # initialize a random state
         taxis = self.__random_taxis()
         passengers = self.__random_passengers()
@@ -402,7 +399,6 @@ class MultiTaxiEnv(ParallelEnv):
         self.__np_random, _ = seeding.np_random(seed)
 
     def step(self, actions: dict):
-        self.n_steps += 1
 
         # use string actions for readability
         actions = {agent: self.__action_index_to_name[agent][action] for agent, action in actions.items()}
@@ -658,6 +654,8 @@ class MultiTaxiEnv(ParallelEnv):
                                 list(self.max_fuel.values()),  # all taxis start with max fuel
                                 list(self.max_fuel.values()),
                                 list(self.fuel_type.values()),
+                                [0] * self.num_taxis,  # all taxis start at step 0
+                                list(self.max_steps.values()),
                                 [None] * self.num_taxis,  # no taxi is carrying a passenger
                                 list(self.can_collide.values()),
                                 collided_list,
@@ -749,6 +747,7 @@ class MultiTaxiEnv(ParallelEnv):
             # step will execute
             infos[taxi.name]['dead'] = False
             self.__add_reward(taxi.name, infos, rewards, Event.STEP)
+            taxi.n_steps += 1
 
             # switch on actions
             if action in {a.value for a in MOVE_ACTIONS}:
@@ -786,6 +785,8 @@ class MultiTaxiEnv(ParallelEnv):
         # it is ok to be stuck without fuel if the objective is achieved at that step
         if not self.__objective_achieved(new_state):
             self.__check_stuck_without_fuel(new_state, infos, rewards)
+            self.__check_out_of_time(new_state, infos, rewards)
+
 
         # drop all passengers of dead taxis if configured to do so
         for taxi_name in self.agents:
@@ -835,9 +836,14 @@ class MultiTaxiEnv(ParallelEnv):
                         infos[t.name].setdefault('collided_with', []).append(other.id)
 
     def __check_stuck_without_fuel(self, new_state, infos, rewards):
-        for taxi in new_state.taxis:
+        for taxi in filter(lambda t: t.name in self.agents, new_state.taxis):
             if self.__taxi_stuck_without_fuel(taxi):
                 self.__add_reward(taxi.name, infos, rewards, Event.STUCK_WITHOUT_FUEL)
+
+    def __check_out_of_time(self, new_state, infos, rewards):
+        for taxi in filter(lambda t: t.name in self.agents, new_state.taxis):
+            if taxi.out_of_time:
+                self.__add_reward(taxi.name, infos, rewards, Event.OUT_OF_TIME)
 
     def __check_reduce_fuel(self, taxi, infos, rewards):
         pass
@@ -1024,14 +1030,14 @@ class MultiTaxiEnv(ParallelEnv):
         # a taxi can die if one of the following holds:
         #   1. the taxi can collide
         #   2. the taxi has a finite maximum fuel capacity
-        return self.can_collide[taxi_name] or not self.infinite_fuel[taxi_name]
+        return self.can_collide[taxi_name] or not self.infinite_fuel[taxi_name] or not self.infinite_steps[taxi_name]
 
     def __taxi_is_dead(self, taxi):
         # taxi is dead before the end of the episode if:
         #   1. taxi has collided.
         #   2. taxi has run out of fuel and is not in a correct fuel station.
         #   3. taxi has surpassed the maximum number of steps it can take
-        return taxi.collided or self.__taxi_stuck_without_fuel(taxi) or self.n_steps > self.max_steps[taxi.name]
+        return taxi.collided or self.__taxi_stuck_without_fuel(taxi) or taxi.out_of_time
 
     def __objective_achieved(self, state=None):
         if state is None:

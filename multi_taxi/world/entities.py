@@ -9,14 +9,16 @@ class Taxi:
     """
     The object representation of a taxi
     """
-    def __init__(self, id_, location, max_capacity, fuel, max_fuel, fuel_type, passengers=None, can_collide=False,
-                 collided=False, engine_on=True):
+    def __init__(self, id_, location, max_capacity, fuel, max_fuel, fuel_type, n_steps, max_steps, passengers=None,
+                 can_collide=False, collided=False, engine_on=True):
         self.id = id_
         self.location = tuple(location)  # assert tuple type for immutability
         self.max_capacity = max_capacity
         self.fuel = fuel
         self.max_fuel = max_fuel
         self.fuel_type = fuel_type
+        self.n_steps = n_steps
+        self.max_steps = max_steps
 
         if passengers is None:
             self.passengers = set()
@@ -90,6 +92,10 @@ class Taxi:
         return self.capacity == self.max_capacity
 
     @property
+    def out_of_time(self):
+        return self.n_steps >= self.max_steps
+
+    @property
     def capacity(self):
         return len(self.passengers)
 
@@ -107,8 +113,8 @@ class Taxi:
         self.fuel = min(self.max_fuel, self.fuel + fill)
 
     @classmethod
-    def from_lists(cls, ids, locations, capacities, fuels, max_fuels, fuel_types, taxi_passengers, taxis_can_collide,
-                   taxis_collided, engines_on):
+    def from_lists(cls, ids, locations, capacities, fuels, max_fuels, fuel_types, taxi_n_steps, taxi_max_steps,
+                   taxi_passengers, taxis_can_collide, taxis_collided, engines_on):
         taxis = []
         for i in range(len(ids)):
             id_ = ids[i]
@@ -117,13 +123,15 @@ class Taxi:
             fuel = fuels[i]
             max_fuel = max_fuels[i]
             fuel_type = fuel_types[i]
+            n_steps = taxi_n_steps[i]
+            max_steps = taxi_max_steps[i]
             passengers = taxi_passengers[i]
             can_collide = taxis_can_collide[i]
             collided = taxis_collided[i]
             engine_on = engines_on[i]
 
-            taxis.append(cls(id_, location, capacity, fuel, max_fuel, fuel_type, passengers, can_collide, collided,
-                             engine_on))
+            taxis.append(cls(id_, location, capacity, fuel, max_fuel, fuel_type, n_steps, max_steps, passengers,
+                             can_collide, collided, engine_on))
 
         return taxis
 
@@ -132,9 +140,10 @@ class Taxi:
 
     def __str__(self):
         fuel_str = f'{self.fuel}/{self.max_fuel}' if self.max_fuel != float('inf') else f'{self.fuel}'
+        step_str = f'{self.n_steps}/{self.max_steps}' if self.max_steps != float('inf') else f'{self.n_steps}'
 
         return (f'Taxi{self.id}-{self.color.upper()}: Fuel: {fuel_str}, Location: {self.location}, '
-                f'Engine: {"ON" if self.engine_on else "OFF"}, Collided: {self.collided}')
+                f'Engine: {"ON" if self.engine_on else "OFF"}, Collided: {self.collided}, Step: {step_str}')
 
     def __copy__(self):
         return self.__class__(self.id,
@@ -143,6 +152,8 @@ class Taxi:
                               self.fuel,
                               self.max_fuel,
                               self.fuel_type,
+                              self.n_steps,
+                              self.max_steps,
                               copy(self.passengers),
                               self.can_collide,
                               self.collided,
@@ -155,6 +166,8 @@ class Taxi:
                                self.fuel,
                                self.max_fuel,
                                self.fuel_type,
+                               self.n_steps,
+                               self.max_steps,
                                deepcopy(self.passengers, memodict),
                                self.can_collide,
                                self.collided,
@@ -164,9 +177,9 @@ class Taxi:
         return copy_
 
     def __hash__(self):
-        return hash((self.id, self.location, self.capacity, self.fuel, self.max_fuel, self.fuel_type,
-                     tuple(sorted(self.passengers, key=lambda p: p.id)), self.can_collide, self.collided,
-                     self.engine_on))
+        return hash((self.id, self.location, self.capacity, self.fuel, self.max_fuel, self.fuel_type, self.n_steps,
+                     self.max_steps, tuple(sorted(self.passengers, key=lambda p: p.id)), self.can_collide,
+                     self.collided, self.engine_on))
 
     def __eq__(self, other):
         return (self.id == other.id and
@@ -175,6 +188,8 @@ class Taxi:
                 self.fuel == other.fuel and
                 self.max_fuel == other.max_fuel and
                 self.fuel_type == other.fuel_type and
+                self.n_steps == other.n_steps and
+                self.max_steps == other.max_steps and
                 self.passengers == other.passengers and
                 self.can_collide == other.can_collide and
                 self.collided == other.collided and
