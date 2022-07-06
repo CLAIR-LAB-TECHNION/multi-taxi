@@ -1279,9 +1279,7 @@ class MultiTaxiEnv(ParallelEnv):
     def __image_observe(self, taxi_name):
         taxi_fov = self.field_of_view[taxi_name]
 
-        # start with entire map
-        arr_ansi = self.__render_map(as_numpy=True)
-        if taxi_fov is None:
+        if taxi_fov is None:  # use entire map
             pil_img = self.__image_render_helper.cur_img
 
         # given FOV, crop out FOV square window
