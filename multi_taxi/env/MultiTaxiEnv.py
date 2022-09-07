@@ -782,8 +782,10 @@ class MultiTaxiEnv(ParallelEnv):
 
         self.__check_collisions(state, new_state, infos, rewards)
 
-        # it is ok to be stuck without fuel if the objective is achieved at that step
-        if not self.__objective_achieved(new_state):
+        if self.__objective_achieved(new_state):
+            self.__objective_achieved_reward(new_state, infos, rewards)
+        else:
+            # it is ok to be stuck without fuel or run out of time if the objective is achieved at that step
             self.__check_stuck_without_fuel(new_state, infos, rewards)
             self.__check_out_of_time(new_state, infos, rewards)
 
@@ -834,6 +836,10 @@ class MultiTaxiEnv(ParallelEnv):
 
                         # in any case report collision
                         infos[t.name].setdefault('collided_with', []).append(other.id)
+
+    def __objective_achieved_reward(self, new_state, infos, rewards):
+        for taxi in filter(lambda t: t.name in self.agents, new_state.taxis):
+            self.__add_reward(taxi.name, infos, rewards, Event.OBJECTIVE)
 
     def __check_stuck_without_fuel(self, new_state, infos, rewards):
         for taxi in filter(lambda t: t.name in self.agents, new_state.taxis):

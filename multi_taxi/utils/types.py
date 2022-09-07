@@ -60,6 +60,7 @@ class Event(Enum):
     HIT_OBSTACLE = auto()                # hit some obstacle in the domain map
     COLLISION = auto()                   # collision occurred at this step
     DEAD = auto()                        # taxi has collided in a past step and cannot act (replaces STEP)
+    OBJECTIVE = auto()                   # environment objective has been achieved
 
 
 class Action(Enum):
