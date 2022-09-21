@@ -382,7 +382,8 @@ class MultiTaxiEnv(ParallelEnv):
 
     def reset(self, seed=None):
         # set seed if given
-        self.seed(seed)
+        if seed is not None:
+            self.seed(seed)
 
         # reset agents
         self.agents = self.possible_agents.copy()
