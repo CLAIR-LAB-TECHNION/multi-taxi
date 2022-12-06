@@ -1001,7 +1001,9 @@ class MultiTaxiEnv(ParallelEnv):
 
         if not infos[taxi.name]['dropped_passenger_at_destination']:
             # no passengers at their destination. drop off the passenger with the lowest ID
-            self.__intermediate_dropoff_reward(taxi.name, passengers[0], infos, rewards)
+            p = passengers[0]
+            taxi.drop_off(p)
+            self.__intermediate_dropoff_reward(taxi.name, p, infos, rewards)
 
     def __intermediate_dropoff_reward(self, taxi_name, passenger, infos, rewards):
         # if penalizing by distance, take the negative Manhattan distance from the destination as the reward
