@@ -138,6 +138,7 @@ class MultiTaxiEnv(ParallelEnv):
                  num_passengers: int = None,
                  domain_map: List[str] = None,
                  pickup_only: bool = None,
+                 no_intermediate_dropoff: bool = None,
                  intermediate_dropoff_reward_by_distance: bool = None,
                  distinct_taxi_initial_locations: bool = None,
                  distinct_passenger_initial_pickups: bool = None,
@@ -191,6 +192,7 @@ class MultiTaxiEnv(ParallelEnv):
             domain_map: array of strings representing the environment map with special characters for taxis initialized
                         spots and fuel stations(see `multi_taxi.world.maps.DEFAULT_MAP`).
             pickup_only: simplifies the problem to only pick up all passengers, without needing dropping them off.
+            no_intermediate_dropoff: if True, taxis an only drop passengers off at their destination.
             intermediate_dropoff_reward_by_distance: changes the reward function for dropping off passengers at a
                                                      location that is not their final destination. if `True`, the given
                                                      reward for intermediate dropoffs is the negative Manhattan distance
@@ -264,6 +266,9 @@ class MultiTaxiEnv(ParallelEnv):
         self.num_taxis = self.__single_value_config(num_taxis, int, config.DEFAULT_NUM_TAXIS)
         self.num_passengers = self.__single_value_config(num_passengers, int, config.DEFAULT_NUM_PASSENGERS)
         self.pickup_only = self.__single_value_config(pickup_only, bool, config.DEFAULT_PICKUP_ONLY)
+        self.no_intermediate_dropoff = self.__single_value_config(
+            no_intermediate_dropoff, bool, config.DEFAULT_NO_INTERMEDIATE_DROPOFF
+        )
         self.intermediate_dropoff_penalty_by_distance = self.__single_value_config(
             intermediate_dropoff_reward_by_distance, bool, config.DEFAULT_INTERMEDIATE_DROPOFF_REWARD_BY_DISTANCE
         )
@@ -970,6 +975,9 @@ class MultiTaxiEnv(ParallelEnv):
                 if p.arrived:  # final dropoff
                     self.__add_reward(taxi.name, infos, rewards, Event.FINAL_DROPOFF)
                     infos[taxi.name]['dropped_passenger_at_destination'] = True
+                elif self.no_intermediate_dropoff:  # bad intermediate dropoff
+                    taxi.pick_up(p)  # undo dropoff
+                    infos[taxi.name]['dropoff_success'] = False  # mark as failure
                 else:  # intermediate dropoff
                     infos[taxi.name]['dropped_passenger_at_destination'] = False
                     self.__intermediate_dropoff_reward(taxi.name, p, infos, rewards)
@@ -1000,10 +1008,14 @@ class MultiTaxiEnv(ParallelEnv):
                 break
 
         if not infos[taxi.name]['dropped_passenger_at_destination']:
-            # no passengers at their destination. drop off the passenger with the lowest ID
-            p = passengers[0]
-            taxi.drop_off(p)
-            self.__intermediate_dropoff_reward(taxi.name, p, infos, rewards)
+            # no passengers at their destination
+            if self.no_intermediate_dropoff:  # bad dropoff action
+                infos[taxi.name]['dropoff_success'] = False  # dropoff failure
+                self.__add_reward(taxi.name, infos, rewards, Event.BAD_DROPOFF)
+            else:  # intermediate dropoff of the passenger with the lowest ID
+                p = passengers[0]
+                taxi.drop_off(p)
+                self.__intermediate_dropoff_reward(taxi.name, p, infos, rewards)
 
     def __intermediate_dropoff_reward(self, taxi_name, passenger, infos, rewards):
         # if penalizing by distance, take the negative Manhattan distance from the destination as the reward
