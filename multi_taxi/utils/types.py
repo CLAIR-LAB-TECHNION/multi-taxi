@@ -30,6 +30,8 @@ class SymbolicObservation(Enum):
     PASSENGER_ARRIVED = 'passenger_{index}_arrived'                 # indicates arrival of indexed passenger destination
     PASSENGER_IN_TAX = 'passenger_{p_index}_in_taxi_{t_index}'       # indicates if the indexed passenger is in the taxi
     PASSENGER_PICKED_UP = 'passenger_{index}_picked_up'              # an indicator for passenger pickup
+    PASSENGER_PICKUP_ORDER = 'passenger_{index}_pickup_order'        # the position of the passenger in pickup ordering
+    PASSENGER_DROPOFF_ORDER = 'passenger_{index}_dropoff_order'       # the position of the passenger in dropoff ordering
 
 
 class ObstacleType(Enum):

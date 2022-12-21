@@ -1,6 +1,7 @@
 import sys
 import warnings
 from collections import OrderedDict, Counter
+from collections.abc import Iterable
 from enum import Enum
 from functools import lru_cache
 from typing import Union, Dict, List
@@ -138,6 +139,8 @@ class MultiTaxiEnv(ParallelEnv):
                  num_passengers: int = None,
                  domain_map: List[str] = None,
                  pickup_only: bool = None,
+                 pickup_order: List[int] = None,
+                 dropoff_order: List[int] = None,
                  no_intermediate_dropoff: bool = None,
                  intermediate_dropoff_reward_by_distance: bool = None,
                  distinct_taxi_initial_locations: bool = None,
@@ -192,6 +195,16 @@ class MultiTaxiEnv(ParallelEnv):
             domain_map: array of strings representing the environment map with special characters for taxis initialized
                         spots and fuel stations(see `multi_taxi.world.maps.DEFAULT_MAP`).
             pickup_only: simplifies the problem to only pick up all passengers, without needing dropping them off.
+            pickup_order: a list of passenger IDs (zero-indexed) that enforces the order in which these passengers can
+                          be picked up. Passengers not included in the list may be picked up at any time. For example,
+                          if we have 3 passengers and a pickup order of [1, 0], then passenger 0 can only be picked up
+                          after passenger 1 has been picked up, and passenger 2 can be picked up regardless of any other
+                          passenger's status.
+            dropoff_order: a list of passenger IDs (zero-indexed) that enforces the order in which these passengers can
+                           be dropped off at their destination. Passengers not included in the list may be dropped off
+                           at their destination at any time. For example, if we have 3 passengers and a dropoff order of
+                           [1, 0], then passenger 0 can only be delivered at its destination after passenger 1 has been
+                           delivered, and passenger 3 can be delivered regardless of any other passenger's status.
             no_intermediate_dropoff: if True, taxis an only drop passengers off at their destination.
             intermediate_dropoff_reward_by_distance: changes the reward function for dropping off passengers at a
                                                      location that is not their final destination. if `True`, the given
@@ -266,6 +279,9 @@ class MultiTaxiEnv(ParallelEnv):
         self.num_taxis = self.__single_value_config(num_taxis, int, config.DEFAULT_NUM_TAXIS)
         self.num_passengers = self.__single_value_config(num_passengers, int, config.DEFAULT_NUM_PASSENGERS)
         self.pickup_only = self.__single_value_config(pickup_only, bool, config.DEFAULT_PICKUP_ONLY)
+        self.pickup_order = self.__single_value_config(pickup_order, list, config.DEFAULT_PICKUP_ORDER)
+        self.dropoff_order = self.__single_value_config(dropoff_order, list, config.DEFAULT_DROPOFF_ORDER)
+
         self.no_intermediate_dropoff = self.__single_value_config(
             no_intermediate_dropoff, bool, config.DEFAULT_NO_INTERMEDIATE_DROPOFF
         )
@@ -765,9 +781,9 @@ class MultiTaxiEnv(ParallelEnv):
                     self.__generic_pickup(taxi, new_state.passengers, infos, rewards)
             elif action.startswith(Action.DROPOFF.value):
                 if self.specify_passenger_dropoff[taxi.name]:
-                    self.__specific_dropoff(taxi, action, infos, rewards)
+                    self.__specific_dropoff(taxi, new_state.passengers, action, infos, rewards)
                 else:
-                    self.__generic_dropoff(taxi, infos, rewards)
+                    self.__generic_dropoff(taxi, new_state.passengers, infos, rewards)
             elif action == Action.STANDBY.value:
                 self.__taxi_standby(taxi, infos, rewards)
             elif action == Action.ENGINE_ON.value:
@@ -926,7 +942,8 @@ class MultiTaxiEnv(ParallelEnv):
         passenger_id = int(action[-1])
 
         for p in passengers:
-            if p.id == passenger_id and p.location == taxi.location and not (p.in_taxi or p.arrived):
+            if (p.id == passenger_id and p.location == taxi.location and
+                    self.__passenger_can_be_picked_up(p, passengers)):
                 taxi.pick_up(p)
                 infos[taxi.name]['pickup_success'] = True
                 self.__add_reward(taxi.name, infos, rewards, Event.PICKUP)
@@ -951,7 +968,7 @@ class MultiTaxiEnv(ParallelEnv):
         passengers = sorted(passengers, key=lambda passenger: passenger.id)
 
         for p in passengers:
-            if p.location == taxi.location and not (p.in_taxi or p.arrived):
+            if p.location == taxi.location and self.__passenger_can_be_picked_up(p, passengers):
                 taxi.pick_up(p)
                 infos[taxi.name]['pickup_success'] = True
                 infos[taxi.name]['picked_up_passenger'] = p.id
@@ -961,7 +978,7 @@ class MultiTaxiEnv(ParallelEnv):
         if not infos[taxi.name]['pickup_success']:  # pickup did not succeed
             self.__add_reward(taxi.name, infos, rewards, Event.BAD_PICKUP)
 
-    def __specific_dropoff(self, taxi, action, infos, rewards):
+    def __specific_dropoff(self, taxi, passengers, action, infos, rewards):
         # assume pickup would fail and fix if success
         infos[taxi.name]['dropoff_success'] = False
 
@@ -975,7 +992,9 @@ class MultiTaxiEnv(ParallelEnv):
                 if p.arrived:  # final dropoff
                     self.__add_reward(taxi.name, infos, rewards, Event.FINAL_DROPOFF)
                     infos[taxi.name]['dropped_passenger_at_destination'] = True
-                elif self.no_intermediate_dropoff:  # bad intermediate dropoff
+
+                # # bad intermediate dropoff or passenger cannot be dropped off due to order
+                elif self.no_intermediate_dropoff or self.__passenger_can_be_dropped_off(p, passengers):
                     taxi.pick_up(p)  # undo dropoff
                     infos[taxi.name]['dropoff_success'] = False  # mark as failure
                 else:  # intermediate dropoff
@@ -986,7 +1005,7 @@ class MultiTaxiEnv(ParallelEnv):
         if not infos[taxi.name]['dropoff_success']:  # dropoff did not succeed
             self.__add_reward(taxi.name, infos, rewards, Event.BAD_DROPOFF)
 
-    def __generic_dropoff(self, taxi, infos, rewards):
+    def __generic_dropoff(self, taxi, passengers, infos, rewards):
         # dropoff will succeed as long as there are passengers to drop
         infos[taxi.name]['dropoff_success'] = bool(taxi.passengers)
 
@@ -1001,7 +1020,7 @@ class MultiTaxiEnv(ParallelEnv):
         # assume intermediate dropoff and fix if final dropoff
         infos[taxi.name]['dropped_passenger_at_destination'] = False
         for p in passengers:
-            if p.location == p.destination:
+            if p.location == p.destination and self.__passenger_can_be_dropped_off(p, passengers):
                 infos[taxi.name]['dropped_passenger_at_destination'] = True
                 taxi.drop_off(p)
                 self.__add_reward(taxi.name, infos, rewards, Event.FINAL_DROPOFF)
@@ -1060,6 +1079,26 @@ class MultiTaxiEnv(ParallelEnv):
         #   3. taxi has surpassed the maximum number of steps it can take
         return taxi.collided or self.__taxi_stuck_without_fuel(taxi) or taxi.out_of_time
 
+    def __taxi_stuck_without_fuel(self, taxi):
+        return taxi.empty_tank and not (self.domain_map.at_fuel_station(taxi.location, taxi.fuel_type) and
+                                        self.can_refuel_without_fuel[taxi.name])
+
+    def __passenger_can_be_picked_up(self, p, all_passengers):
+        # a passenger may be picked up if it had not yet been picked up or dropped off at the destination
+        # and if its ID does not appear in the `pickup_order` list or if all passengers that appear before it have been
+        # picked up.
+        return (not (p.in_taxi or p.arrived) and  # passenger in taxi or at destination cannot be picked up
+                (p.id not in self.pickup_order or  # passenger not in pickup order can be picked up at any time
+                 all(all_passengers[p_id].in_taxi or all_passengers[p_id].arrived  # check preceeding passengers
+                     for p_id in self.pickup_order[:self.pickup_order.index(p.id)])))
+
+    def __passenger_can_be_dropped_off(self, p, all_passengers):
+        # a passenger may be dropped off if it has already been picked up and if its ID does not appear in the
+        # `dropoff_order` list or if all passengers that appear before it have been dropped off at their destination.
+        return (p.in_taxi and  # passenger must be in a taxi in order to be dropped off
+                (p.id not in self.dropoff_order or  # passenger not in pickup order can be picked up at any time
+                 all(all_passengers[p_id].arrived for p_id in self.dropoff_order[:self.dropoff_order.index(p.id)])))
+
     def __objective_achieved(self, state=None):
         if state is None:
             state = self.__state
@@ -1069,10 +1108,6 @@ class MultiTaxiEnv(ParallelEnv):
         #   2. `pickup_only` is set to `True` and all passengers are in a taxi.
         return ((not self.pickup_only and all(p.arrived for p in state.passengers)) or  # 1
                 (self.pickup_only and all(p.in_taxi for p in state.passengers)))  # 2
-
-    def __taxi_stuck_without_fuel(self, taxi):
-        return taxi.empty_tank and not (self.domain_map.at_fuel_station(taxi.location, taxi.fuel_type) and
-                                        self.can_refuel_without_fuel[taxi.name])
 
     ###############################
     # End Done Checking Functions #
@@ -1109,6 +1144,7 @@ class MultiTaxiEnv(ParallelEnv):
         return spaces.Dict(obs_spaces), space_meanings
 
     def __get_symbolic_space_and_disambiguation(self, taxi_name):
+        # taxi location info
         dim_vec = [self.domain_map.map_height, self.domain_map.map_width]
         observations = [SymbolicObservation.LOCATION_ROW.value, SymbolicObservation.LOCATION_COL.value]
 
@@ -1174,6 +1210,16 @@ class MultiTaxiEnv(ParallelEnv):
                 # picked up indicator bit
                 dim_vec.append(2)  # indicator bit for passenger "picked up"
                 observations.append(SymbolicObservation.PASSENGER_PICKED_UP.value.format(index=i))
+
+            # passenger pickup and dropoff ordering
+            if self.pickup_order:
+                # one value for each place in the order + 0 indicates pickup at any time
+                dim_vec.append(self.num_passengers + 1)
+                observations.append(SymbolicObservation.PASSENGER_PICKUP_ORDER.value.format(index=i))
+            if self.dropoff_order:
+                # one value for each place in the order + 0 indicates dropoff at any time
+                dim_vec.append(self.num_passengers + 1)
+                observations.append(SymbolicObservation.PASSENGER_DROPOFF_ORDER.value.format(index=i))
 
         return spaces.MultiDiscrete(dim_vec), observations
 
@@ -1295,6 +1341,14 @@ class MultiTaxiEnv(ParallelEnv):
             # in-taxi indicator bit
             obs.extend([passenger.carrying_taxi == j for j in range(self.num_taxis)])
 
+            # passenger pickup and dropoff ordering
+            if self.pickup_order:
+                # one value for each place in the order + 0 indicates pickup at any time
+                obs.append(self.pickup_order.index(passenger.id) + 1 if passenger.id in self.pickup_order else 0)
+            if self.dropoff_order:
+                # one value for each place in the order + 0 indicates dropoff at any time
+                obs.append(self.dropoff_order.index(passenger.id) + 1 if passenger.id in self.dropoff_order else 0)
+
         return np.array(obs)
 
     def __image_observe(self, taxi_name):
@@ -1389,6 +1443,12 @@ class MultiTaxiEnv(ParallelEnv):
         # output passengers data
         for passenger in self.__state.passengers:
             status_str += f'{passenger}\n'
+
+        # output passengers pickup and dropoff ordering
+        if self.pickup_order:
+            status_str += f'Passenger pickup order: {self.pickup_order}'
+        if self.dropoff_order:
+            status_str += f'Passenger dropoff order: {self.dropoff_order}'
 
         # output "env done"
         status_str += f'Env done: {self.env_done()}\n'
