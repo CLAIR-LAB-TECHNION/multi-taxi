@@ -17,7 +17,7 @@
 5. and so much more!
 
 For a quickstart guide and a deeper dive into the environment and its configuraions, please consult our
-[demonstration notebook](https://github.com/sarah-keren/multi_taxi/blob/main/notebooks/MultiTaxiEnvDemo.ipynb), also
+[demonstration notebook](https://github.com/CLAIR-LAB-TECHNION/multi_taxi/blob/main/notebooks/MultiTaxiEnvDemo.ipynb), also
 available in
 [colab](https://colab.research.google.com/github/sarah-keren/multi_taxi/blob/main/notebooks/MultiTaxiEnvDemo.ipynb) and
 [nbviewer](https://nbviewer.org/github/sarah-keren/multi_taxi/blob/main/notebooks/MultiTaxiEnvDemo.ipynb).
@@ -25,20 +25,24 @@ available in
 # Installation
 The easiest way to install `multi_taxi` is directly from the git repository using `pip`. Here is how to install the
 latest stable version:
-```bash
-pip install "git+https://github.com/sarah-keren/multi_taxi@0.3.0"
+```shell
+pip install "git+https://github.com/CLAIR-LAB-TECHNION/multi_taxi@0.4.0"
 ```
 
 You can also download our latest updates by not specifying a tag, like so:
-```bash
-pip install "git+https://github.com/sarah-keren/multi_taxi"
+```shell
+pip install "git+https://github.com/CLAIR-LAB-TECHNION/multi_taxi"
 ```
 
+If you wish to install the environment that uses the legacy pettingzoo API, please install version `0.3.0` like so:
+```shell
+pip install "git+https://github.com/CLAIR-LAB-TECHNION/multi_taxi@0.3.0"
+```
 
 If you are seeking the legacy version, which is based on the [RLLib](https://docs.ray.io/en/latest/rllib/index.html)
 API, please install version `0.0.0` like so:
 ```bash
-pip install "git+https://github.com/sarah-keren/multi_taxi@0.0.0"
+pip install "git+https://github.com/CLAIR-LAB-TECHNION/multi_taxi@0.0.0"
 ```
 
 # Acknowledgements
@@ -52,8 +56,8 @@ To cite this repository in academic works or any other purpose, please use the f
     author = {Azran, Guy and Keren, Sarah},
     month = {7},
     title = {{Multi Taxi: A Modular Setting for Multi-Agent Systems Experiments}},
-    url = {https://github.com/sarah-keren/multi_taxi},
-    version = {0.3.0},
+    url = {https://github.com/CLAIR-LAB-TECHNION/multi_taxi},
+    version = {0.4.0},
     year = {2022}
 }
 ```

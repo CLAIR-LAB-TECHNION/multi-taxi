@@ -6,6 +6,6 @@ authors:
 - family-names: "Keren"
   given-names: "Sarah"
 title: "Multi Taxi: A Modular Setting for Multi-Agent Systems Experiments"
-version: 0.3.0
+version: 0.4.0
 date-released: 2022-07-01
-url: "https://github.com/sarah-keren/multi_taxi"
+url: "https://github.com/CLAIR-LAB-TECHNION/multi_taxi"
