@@ -1,7 +1,6 @@
 import sys
 import warnings
-from collections import OrderedDict, Counter
-from collections.abc import Iterable
+from collections import OrderedDict
 from enum import Enum
 from functools import lru_cache
 from typing import Union, Dict, List
@@ -810,7 +809,6 @@ class MultiTaxiEnv(ParallelEnv):
             # it is ok to be stuck without fuel or run out of time if the objective is achieved at that step
             self.__check_stuck_without_fuel(new_state, infos, rewards)
             self.__check_out_of_time(new_state, infos, rewards)
-
 
         # drop all passengers of dead taxis if configured to do so
         for taxi_name in self.agents:

@@ -1,5 +1,5 @@
-from pettingzoo.utils.env_logger import EnvLogger
 from pettingzoo.utils import BaseParallelWraper
+from pettingzoo.utils.env_logger import EnvLogger
 
 
 class OrderEnforcingParallelWrapper(BaseParallelWraper):

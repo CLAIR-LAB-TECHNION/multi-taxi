@@ -49,7 +49,6 @@ PICKUP_ONLY_GENERIC = __actions_dict(MOVE_STRINGS + [Action.PICKUP.value])
 STANDARD_REFUEL = __actions_dict(MOVE_STRINGS + [Action.PICKUP.value, Action.DROPOFF.value, Action.REFUEL.value])
 ENGINE_CTL = __actions_dict(MOVE_STRINGS + [Action.PICKUP.value, Action.DROPOFF.value] + ENGINE_STRS)
 
-
 TRUE_POSSIBLE_ACTIONS = {
     'single_taxi_simple': {'taxi_0': STANDARD_GENERIC},
     'single_taxi_two_passenger': {'taxi_0': STANDARD_GENERIC},

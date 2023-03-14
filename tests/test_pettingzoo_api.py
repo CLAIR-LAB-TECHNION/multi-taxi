@@ -1,6 +1,6 @@
+import pytest
 from pettingzoo.test import api_test, parallel_api_test
 
-import pytest
 from multi_taxi import multi_taxi_v0
 from .common import test_env_cfgs
 

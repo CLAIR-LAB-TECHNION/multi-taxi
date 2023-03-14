@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+
 from multi_taxi import maps
 
 ENV_CFG_FILE = Path(__file__).parent / 'test_env_configs.json'

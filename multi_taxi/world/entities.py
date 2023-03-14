@@ -1,4 +1,5 @@
 from copy import copy, deepcopy
+
 from ..utils.types import Action
 
 PASSENGER_NOT_IN_TAXI = -1
@@ -9,6 +10,7 @@ class Taxi:
     """
     The object representation of a taxi
     """
+
     def __init__(self, id_, location, max_capacity, fuel, max_fuel, fuel_type, n_steps, max_steps, passengers=None,
                  can_collide=False, collided=False, engine_on=True):
         self.id = id_

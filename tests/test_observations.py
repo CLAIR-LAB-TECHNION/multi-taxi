@@ -1,9 +1,8 @@
 import pytest
-from .common import test_env_cfgs
-
 from gym.spaces import MultiDiscrete, Box, Dict
 
 from multi_taxi import multi_taxi_v0, ObservationType
+from .common import test_env_cfgs
 
 TRUE_SPACES = {
     'single_taxi_simple': {'taxi_0': [7, 12, 7, 12, 7, 12, 2, 2]},

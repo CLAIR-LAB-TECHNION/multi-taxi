@@ -1,11 +1,10 @@
 from multi_taxi import multi_taxi_v0, single_taxi_v0, maps, Action, FuelType
 
-
 movements = {
-    0: (1, 0),   # south
+    0: (1, 0),  # south
     1: (-1, 0),  # north
-    2: (0, 1),   # east
-    3: (0, -1)   # west
+    2: (0, 1),  # east
+    3: (0, -1)  # west
 }
 
 
@@ -149,4 +148,3 @@ def test_non_collider():
 
     taxis = env.state().taxis
     assert all(not taxi.collided for taxi in taxis)
-

@@ -1,6 +1,6 @@
-from typing import Dict
 from collections import defaultdict, OrderedDict
 from itertools import product
+from typing import Dict
 
 import numpy as np
 
