@@ -1,7 +1,8 @@
+import gymnasium
 from pettingzoo.utils.wrappers import BaseParallelWraper
 
 
-class SingleAgentParallelEnvToGymWrapper(BaseParallelWraper):
+class SingleAgentParallelEnvToGymWrapper(BaseParallelWraper, gymnasium.Env):
     """
     A wrapper for single-agent parallel environments aligning the environments'
     API with OpenAI Gym.
@@ -16,14 +17,30 @@ class SingleAgentParallelEnvToGymWrapper(BaseParallelWraper):
         # assert single agent environment
         assert len(env.possible_agents) == 1
 
+    @property
+    def render_mode(self):
+        return self.env.unwrapped.render_mode
+
     def reset(self, **kwargs):
+        # get pettingzoo specific reset arguments
+        seed = kwargs.pop('seed', None)  # random seed (also common in gym)
+        return_info = kwargs.pop('return_info', False)  # pettingzoo exclusive
+
         # run `reset` as usual.
-        # returned value is a dictionary of observations with a single entry
-        obs = self.env.reset(**kwargs)
+        out = self.env.reset(seed=seed,
+                             return_info=return_info,
+                             options=kwargs or None)
+
+        # check if infos are a part of the reset return
+        if return_info:
+            obs, infos = out
+        else:
+            obs = out
+            infos = {k: {} for k in obs.keys()}
 
         # return the single entry value as is.
         # no need for the key (only one agent)
-        return next(iter(obs.values()))
+        return next(iter(obs.values())), next(iter(infos.values()))
 
     def step(self, action):
         # step using "joint action" of a single agnet as a dictionary
@@ -70,14 +87,15 @@ class SingleTaxiWrapper(SingleAgentParallelEnvToGymWrapper):
         transitions = self.unwrapped.state_action_transitions_(state, {self.possible_agents[0]: action})
         single_agent_transitions = []
         for res in transitions:
-            new_state, rewards, dones, infos, prob = res
+            new_state, rewards, terms, truncs, infos, prob = res
 
             # extract single agent values
             rewards = next(iter(rewards.values()))
-            dones = next(iter(dones.values()))
+            terms = next(iter(terms.values()))
+            truncs = next(iter(truncs.values()))
             infos = next(iter(infos.values()))
 
-            single_agent_transitions.append((new_state, rewards, dones, infos))
+            single_agent_transitions.append((new_state, rewards, terms, truncs, infos))
 
         return single_agent_transitions
 

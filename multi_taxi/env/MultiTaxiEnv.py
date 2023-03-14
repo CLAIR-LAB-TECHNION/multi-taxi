@@ -6,8 +6,9 @@ from functools import lru_cache
 from typing import Union, Dict, List
 
 import numpy as np
-from gym import spaces
-from gym.utils import colorize, seeding
+from gymnasium import spaces
+from gymnasium.utils import colorize, seeding
+from pettingzoo.utils.env_logger import EnvLogger
 from pettingzoo import ParallelEnv
 
 from . import config
@@ -130,7 +131,7 @@ class MultiTaxiEnv(ParallelEnv):
     ##################
 
     # metadata object defining information about the environment
-    metadata = {'render_modes': ['human', 'ansi'], 'name': 'multi_taxi_env_v0'}
+    metadata = {'render_modes': ['human', 'ansi', 'rgb_array'], 'name': 'multi_taxi_env_v0'}
 
     def __init__(self,
                  # environment configurations
@@ -168,6 +169,7 @@ class MultiTaxiEnv(ParallelEnv):
                  can_see_other_taxi_info: PerTaxiValue(bool) = None,
                  field_of_view: PerTaxiValue(int) = None,
 
+                 render_mode=None,
                  initial_seed=None):
         """
         Initialize environment with given specifications. Possible configurations are as follows:
@@ -269,10 +271,16 @@ class MultiTaxiEnv(ParallelEnv):
             field_of_view: defines the dimension of the square window around the taxi within the domain map for image
                            observations. if not specified, the image observation is the entire map.
             initial_seed: sets deterministic randomness in the environment.
+            render_mode: set this parameter to control the type of environment rendering. can be 'human', 'ansi', or
+                         'rgb_arry'. if not provided, no rendering is available (calling `render` will emmit a warning).
         """
         # set random seed if specified
         self.__np_random = None
         self.seed(initial_seed)
+
+        # set render mode
+        assert render_mode is None or render_mode in self.metadata["render_modes"]
+        self.__render_mode = render_mode
 
         # initialize env configurations with argument or default value
         self.num_taxis = self.__single_value_config(num_taxis, int, config.DEFAULT_NUM_TAXIS)
@@ -365,7 +373,7 @@ class MultiTaxiEnv(ParallelEnv):
         self.observation_type = self.__per_taxi_single_or_list(observation_type, ObservationType,
                                                                config.DEFAULT_OBSERVATION_TYPE)
         if any(obs_type in [ObservationType.IMAGE, ObservationType.MIXED]
-               for obs_type in self.observation_type.values()):
+               for obs_type in self.observation_type.values()) or self.render_mode == 'rgb_array':
             self.__image_render_helper = ansitoimg.TaxiMapRendering(self.domain_map.domain_map)
         else:
             self.__image_render_helper = None
@@ -400,7 +408,7 @@ class MultiTaxiEnv(ParallelEnv):
         # state and env objects
         self.__state = None
 
-    def reset(self, seed=None):
+    def reset(self, seed=None, return_info=False, options=None):
         # set seed if given
         if seed is not None:
             self.seed(seed)
@@ -413,8 +421,14 @@ class MultiTaxiEnv(ParallelEnv):
         passengers = self.__random_passengers()
         self.__state = MultiTaxiEnvState(taxis, passengers)
 
-        # return all observations
-        return self.__observe_all()
+        # get all observations
+        observations = self.__observe_all()
+
+        if not return_info:
+            return observations
+        else:
+            infos = {agent: {} for agent in self.agents}
+            return observations, infos
 
     def seed(self, seed=None):
         self.__np_random, _ = seeding.np_random(seed)
@@ -428,7 +442,7 @@ class MultiTaxiEnv(ParallelEnv):
         true_actions = self.stochastic_action_function(actions, rng=self.__np_random)
 
         # step in environment with sampled action
-        new_state, rewards, dones, infos = self.__step_from_state(self.__state, true_actions)
+        new_state, rewards, terms, truncs, infos = self.__step_from_state(self.__state, true_actions)
 
         # log desired actions and performed transitions
         for agent, agent_info in infos.items():
@@ -442,13 +456,29 @@ class MultiTaxiEnv(ParallelEnv):
         obs = self.__observe_all()
 
         # remove done agents from live agents list
-        for taxi_name, done in dones.items():
+        for taxi_name, done in terms.items():
             if done:
                 self.agents.remove(taxi_name)
 
-        return obs, rewards, dones, infos
+        return obs, rewards, terms, truncs, infos
 
-    def render(self, mode='human'):
+    @property
+    def render_mode(self):
+        return self.__render_mode
+
+    def render(self):
+        if self.render_mode is None:  # no rendering
+            EnvLogger._generic_warning('Calling `render` method with `render_mode = None. '
+                                       'No rendering was generated. '
+                                       'To generate a rendering, set `render_mode` to a supported mode: '
+                                       f'{self.metadata["render_modes"]}')
+            return
+
+        if self.render_mode == 'rgb_array':  # return image as numpy array
+            return self.__image_observe()
+
+        # render classic ascii
+
         rendering = self.__render_map()  # get map string
 
         rendering += '\n'  # separate map and text with new line
@@ -456,7 +486,7 @@ class MultiTaxiEnv(ParallelEnv):
         rendering += self.__render_status()  # get state info string
 
         # return string value for ansi mode
-        if mode == 'ansi':
+        if self.render_mode == 'ansi':
             return rendering
         else:
             print(rendering)
@@ -508,7 +538,7 @@ class MultiTaxiEnv(ParallelEnv):
         # iterate all possible joint actions
         for joint_action, prob in self.stochastic_action_function.iterate_possible_actions(actions):
             # make a copy of the current state. update only the copy
-            new_state, rewards, dones, infos = self.__step_from_state(state, joint_action)
+            new_state, rewards, terms, truncs, infos = self.__step_from_state(state, joint_action)
 
             # log desired actions and performed transitions
             for agent, agent_info in infos.items():
@@ -516,7 +546,7 @@ class MultiTaxiEnv(ParallelEnv):
                 agent_info['performed_transition'] = joint_action[agent]
 
             # append results to returned container
-            transition_results.append((new_state, rewards, dones, infos, prob))
+            transition_results.append((new_state, rewards, terms, truncs, infos, prob))
 
         return transition_results
 
@@ -823,7 +853,9 @@ class MultiTaxiEnv(ParallelEnv):
         else:  # set done for all taxis when episode is complete
             dones = {taxi_name: env_done for taxi_name in self.agents}
 
-        return new_state, rewards, dones, infos
+        truncs = {taxi_name: False for taxi_name in self.agents}
+
+        return new_state, rewards, dones, truncs, infos
 
     def __check_collisions(self, old_state, new_state, infos, rewards):
         # iterate every pair of taxis that can collide
@@ -1349,8 +1381,9 @@ class MultiTaxiEnv(ParallelEnv):
 
         return np.array(obs)
 
-    def __image_observe(self, taxi_name):
-        taxi_fov = self.field_of_view[taxi_name]
+    def __image_observe(self, taxi_name=None):
+        # if no taxi is specified, taxi_fov is set to none ==> entire map is rendereds
+        taxi_fov = self.field_of_view.get(taxi_name)
 
         if taxi_fov is None:  # use entire map
             pil_img = self.__image_render_helper.cur_img

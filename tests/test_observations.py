@@ -1,5 +1,5 @@
 import pytest
-from gym.spaces import MultiDiscrete, Box, Dict
+from gymnasium.spaces import MultiDiscrete, Box, Dict
 
 from multi_taxi import multi_taxi_v0, ObservationType
 from .common import test_env_cfgs
@@ -49,6 +49,11 @@ TRUE_SPACES = {
     },
     'two_taxi_small_map': {f'taxi_{i}': [5, 5, 5, 5, 5, 5, 2, 2, 2] for i in range(2)},
     'two_taxi_see_each_other_small_map': {f'taxi_{i}': [5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2] for i in range(2)},
+    'single_taxi_image_observation': {'taxi_0': [0, 255, (140, 226, 3)]},
+    'single_taxi_multi_observation': {'taxi_0': {
+            'symbolic': [7, 12, 7, 12, 7, 12, 2, 2, 7, 12, 7, 12, 2, 2],
+            'image': [0, 255, (140, 226, 3)]
+    }},
     'three_taxi_multi_observation': {
         'taxi_0': [7, 12, 31, 2, 7, 12, 7, 12, 2, 2, 2, 2, 7, 12, 7, 12, 2, 2, 2, 2],
         'taxi_1': [0, 255, (140, 226, 3)],

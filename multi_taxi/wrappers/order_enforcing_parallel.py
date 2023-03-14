@@ -34,7 +34,7 @@ class OrderEnforcingParallelWrapper(BaseParallelWraper):
         if not self._has_reset:
             EnvLogger.error_step_before_reset()
         elif not self.agents:
-            EnvLogger.warn_step_after_done()
+            EnvLogger.warn_step_after_terminated_truncated()
         else:
             return super().step(action)
 
@@ -43,9 +43,9 @@ class OrderEnforcingParallelWrapper(BaseParallelWraper):
             EnvLogger.error_state_before_reset()
         return super().state()
 
-    def reset(self, seed=None):
+    def reset(self, **kwargs):
         self._has_reset = True
-        return super().reset(seed=seed)
+        return super().reset(**kwargs)
 
     def __str__(self):
         str(self.unwrapped)

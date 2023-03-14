@@ -1,5 +1,5 @@
 import pytest
-from gym.spaces import Discrete
+from gymnasium.spaces import Discrete
 
 from multi_taxi import multi_taxi_v0, Action
 from multi_taxi.utils.types import MOVE_ACTIONS, ENGINE_ACTIONS
@@ -85,6 +85,8 @@ TRUE_POSSIBLE_ACTIONS = {
     },
     'two_taxi_small_map': {f'taxi_{i}': STANDARD_GENERIC for i in range(2)},
     'two_taxi_see_each_other_small_map': {f'taxi_{i}': STANDARD_GENERIC for i in range(2)},
+    'single_taxi_image_observation': {'taxi_0': __pickup_specify(2)},
+    'single_taxi_multi_observation': {'taxi_0': __pickup_specify(2)},
     'three_taxi_multi_observation': {
         'taxi_0': __specify_with_refuel_and_standby(__pickup_specify, 2),
         'taxi_1': __specify_with_refuel(__pickup_specify, 2),

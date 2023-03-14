@@ -11,5 +11,5 @@ def gym_env(*args, **kwargs):
         kwargs['num_taxis'] = 1
 
     single_taxi_env = __SingleTaxiWrapper(multi_taxi_env)
-    single_taxi_env.unwrapped.metadata['name'] = 'single_taxi_v1'
+    single_taxi_env.unwrapped.metadata['name'] = 'single_taxi_v0'
     return single_taxi_env

@@ -101,6 +101,16 @@
         "domain_map": "SMALL_MAP",
         "can_see_other_taxi_info": true
     },
+    "single_taxi_image_observation": {
+        "num_passengers": 2,
+        "specify_passenger_pickup": true,
+        "observation_type": "image"
+    },
+    "single_taxi_multi_observation": {
+        "num_passengers": 2,
+        "specify_passenger_pickup": true,
+        "observation_type": "mixed"
+    },
     "three_taxi_multi_observation": {
         "num_taxis": 3,
         "num_passengers": 2,

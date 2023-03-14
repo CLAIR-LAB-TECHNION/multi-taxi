@@ -21,3 +21,4 @@ def get_test_env_cfgs():
 
 
 test_env_cfgs = get_test_env_cfgs()
+single_agent_cfgs = {k: cfg for k, cfg in test_env_cfgs.items() if 'num_taxis' not in cfg or cfg['num_taxis'] == 1}
