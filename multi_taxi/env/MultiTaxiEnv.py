@@ -814,7 +814,7 @@ class MultiTaxiEnv(ParallelEnv):
 
         # drop all passengers of dead taxis if configured to do so
         for taxi_name in self.agents:
-            if self.passenger_fumble[taxi_name] and self.__taxi_is_dead(taxi_name):
+            if self.passenger_fumble[taxi_name] and self.__taxi_is_dead(new_state.taxi_by_name[taxi_name]):
                 taxi = new_state.taxi_by_name[taxi_name]
                 taxi.drop_all()
 
