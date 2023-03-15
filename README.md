@@ -52,13 +52,13 @@ implementation paper can be found [here](https://github.com/ofirAbu/MultiTaxiLib
 # Citation
 To cite this repository in academic works or any other purpose, please use the following BibTeX citation:
 ```BibTeX
-@software{Azran_Multi_Taxi_A_2022,
-    author = {Azran, Guy and Keren, Sarah},
-    month = {7},
-    title = {{Multi Taxi: A Modular Setting for Multi-Agent Systems Experiments}},
-    url = {https://github.com/CLAIR-LAB-TECHNION/multi_taxi},
-    version = {0.4.0},
-    year = {2022}
+@software{Azran_Multi_Taxi_A_2023,
+      author = {Azran, Guy and Keren, Sarah},
+      month = {3},
+      title = {{Multi Taxi: A Modular Setting for Multi-Agent Systems Experiments}},
+      url = {https://github.com/CLAIR-LAB-TECHNION/multi_taxi},
+      version = {0.4.0},
+      year = {2023}
 }
 ```
 Alternatively, we offer a [CITATION.cff file](https://citation-file-format.github.io/) with GitHub and Zotero
