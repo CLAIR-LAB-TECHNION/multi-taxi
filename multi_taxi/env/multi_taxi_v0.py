@@ -18,6 +18,7 @@ def raw_env(*args, **kwargs):
 
 def parallel_env(*args, **kwargs):
     p_env = MultiTaxiEnv(*args, **kwargs)
-    p_env = __custom_wrappers.AssertOutOfBoundsParallelWrapper(p_env)
-    p_env = __custom_wrappers.OrderEnforcingParallelWrapper(p_env)
+    # TODO: Fix the custom wrappers.
+    # p_env = __custom_wrappers.AssertOutOfBoundsParallelWrapper(p_env)
+    # p_env = __custom_wrappers.OrderEnforcingParallelWrapper(p_env)
     return p_env
