@@ -12,6 +12,8 @@ from ray.rllib.env import ParallelPettingZooEnv
 from pettingzoo import ParallelEnv
 from envs.multi_taxi import MultiTaxiCreator
 from algorithms.ppo import PPOCreator
+from algorithms.dqn import DQNCreator
+from algorithms.algo_creator import AlgoCreator 
 
 class ParallelEnvRunner:
 
@@ -118,6 +120,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Train or evaluate an agent")
     parser.add_argument("--mode", choices=["train", "evaluate"], required=True, help="Choose 'train' or 'evaluate' mode")
     parser.add_argument("--checkpoint-path", type=validate_path, help="Checkpoint path for evaluation")
+    parser.add_argument("--algo", type=str, choices=["ppo", "dqn"], default="ppo", help="The algorithm to run on the env")
 
     try:
         import argcomplete
@@ -128,12 +131,21 @@ def parse_args():
     return parser.parse_args()
 
 
+def get_algorithm(algo_name: str) -> AlgoCreator:
+    if algo_name == "ppo":
+        return PPOCreator
+    elif algo_name == "dqn":
+        return DQNCreator
+    
+
 if __name__ == "__main__":
     args = parse_args()
 
+    algorithm = get_algorithm(args.algo)
+
     runner = ParallelEnvRunner(MultiTaxiCreator.get_env_name(), MultiTaxiCreator.create_env(), 
-                               PPOCreator.get_algo_name(), PPOCreator.get_config(MultiTaxiCreator.get_env_name()))
+                               algorithm.get_algo_name(), algorithm.get_config(MultiTaxiCreator.get_env_name()))
     if args.mode == 'train':
         runner.train()
     elif args.mode == 'evaluate':
-        runner.evaluate(PPOCreator.get_algo(), args.checkpoint_path)
+        runner.evaluate(algorithm.get_algo(), args.checkpoint_path)
