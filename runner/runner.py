@@ -1,9 +1,30 @@
 #!/usr/bin/env python3
+# PYTHON_ARGCOMPLETE_OK
 
 import argparse
 
 from typing import Dict
 from pathlib import Path
+
+def validate_path(path: str):
+    '''
+    Check if the path exists
+    '''
+    path = Path(path)
+    if not path.exists():
+        raise argparse.ArgumentTypeError(f"Path '{path}' does not exist.")
+    return path
+
+parser = argparse.ArgumentParser(description="Train or evaluate an agent")
+parser.add_argument("--mode", choices=["train", "evaluate"], required=True, help="Choose 'train' or 'evaluate' mode")
+parser.add_argument("--checkpoint-path", type=validate_path, help="Checkpoint path for evaluation")
+parser.add_argument("--algo", type=str, choices=["ppo", "dqn"], default="ppo", help="The algorithm to run on the env")
+
+try:
+    import argcomplete
+    argcomplete.autocomplete(parser)
+except ImportError:
+    print("Please install argcomplete for auto completion")
 
 import ray
 from ray import tune
@@ -107,29 +128,6 @@ class ParallelEnvRunner:
             print(f"Step {i} - Total Reward: {reward_sum}")
             i += 1
 
-def validate_path(path: str):
-    '''
-    Check if the path exists
-    '''
-    path = Path(path)
-    if not path.exists():
-        raise argparse.ArgumentTypeError(f"Path '{path}' does not exist.")
-    return path
-
-def parse_args():
-    parser = argparse.ArgumentParser(description="Train or evaluate an agent")
-    parser.add_argument("--mode", choices=["train", "evaluate"], required=True, help="Choose 'train' or 'evaluate' mode")
-    parser.add_argument("--checkpoint-path", type=validate_path, help="Checkpoint path for evaluation")
-    parser.add_argument("--algo", type=str, choices=["ppo", "dqn"], default="ppo", help="The algorithm to run on the env")
-
-    try:
-        import argcomplete
-        argcomplete.autocomplete(parser)
-    except ImportError:
-        print("Please install argcomplete for auto completion")
-
-    return parser.parse_args()
-
 
 def get_algorithm(algo_name: str) -> AlgoCreator:
     if algo_name == "ppo":
@@ -139,7 +137,7 @@ def get_algorithm(algo_name: str) -> AlgoCreator:
     
 
 if __name__ == "__main__":
-    args = parse_args()
+    args = parser.parse_args()
 
     algorithm = get_algorithm(args.algo)
 
