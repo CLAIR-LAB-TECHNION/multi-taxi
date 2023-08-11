@@ -27,7 +27,7 @@ class MultiTaxiCreator(EnvCreator):
         return multi_taxi_v0.parallel_env(
             num_taxis=2,                       # there are 2 active taxis (agents) in the environment
             num_passengers=3,                  # there are 3 passengers in the environment
-            max_steps=1000,
+            max_steps=200,
             reward_table=custom_reward_table,
             intermediate_dropoff_reward_by_distance=True,
             max_capacity=[1, 2],               # taxi_0 can carry 1 passenger, taxi_1 can carry 2
