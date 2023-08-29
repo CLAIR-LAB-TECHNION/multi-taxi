@@ -6,6 +6,17 @@ import argparse
 from typing import Dict
 from pathlib import Path
 
+import ray
+from ray import tune
+from ray.rllib.env import ParallelPettingZooEnv
+
+from pettingzoo import ParallelEnv
+from envs.multi_taxi import MultiTaxiCreator
+from algorithms.ppo import PPOCreator
+from algorithms.dqn import DQNCreator
+from algorithms.algo_creator import AlgoCreator
+
+
 def validate_path(path: str):
     '''
     Check if the path exists
@@ -14,6 +25,7 @@ def validate_path(path: str):
     if not path.exists():
         raise argparse.ArgumentTypeError(f"Path '{path}' does not exist.")
     return path
+
 
 parser = argparse.ArgumentParser(description="Train or evaluate an agent")
 parser.add_argument("--mode", choices=["train", "evaluate"], required=True, help="Choose 'train' or 'evaluate' mode")
@@ -26,15 +38,6 @@ try:
 except ImportError:
     print("Please install argcomplete for auto completion")
 
-import ray
-from ray import tune
-from ray.rllib.env import ParallelPettingZooEnv
-
-from pettingzoo import ParallelEnv
-from envs.multi_taxi import MultiTaxiCreator
-from algorithms.ppo import PPOCreator
-from algorithms.dqn import DQNCreator
-from algorithms.algo_creator import AlgoCreator 
 
 class ParallelEnvRunner:
 
@@ -48,7 +51,6 @@ class ParallelEnvRunner:
         self.algorithm_name = algorithm_name
         
         tune.register_env(self.env_name, lambda config: ParallelPettingZooEnv(self.create_env(config)))
-
 
     def __del__(self):
         ray.shutdown()
@@ -84,7 +86,6 @@ class ParallelEnvRunner:
             local_dir="ray_results/" + self.env_name,
             config=self.config.to_dict(),
         )
-
 
     def evaluate(self, algorithm, checkpoint_path: str = None, seed: int = 42):
         # Create an agent to handle the environment
