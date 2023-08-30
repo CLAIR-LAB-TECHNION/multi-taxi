@@ -12,6 +12,7 @@ from ray.rllib.env import ParallelPettingZooEnv
 
 from pettingzoo import ParallelEnv
 from envs.multi_taxi import MultiTaxiCreator
+from envs.city_learn.cityLearn import CityLearnCreator
 from algorithms.ppo import PPOCreator
 from algorithms.dqn import DQNCreator
 from algorithms.algo_creator import AlgoCreator
@@ -139,11 +140,11 @@ def get_algorithm(algo_name: str) -> AlgoCreator:
 
 if __name__ == "__main__":
     args = parser.parse_args()
-
+    envCreator = CityLearnCreator
     algorithm = get_algorithm(args.algo)
 
-    runner = ParallelEnvRunner(MultiTaxiCreator.get_env_name(), MultiTaxiCreator.create_env(), 
-                               algorithm.get_algo_name(), algorithm.get_config(MultiTaxiCreator.get_env_name()))
+    runner = ParallelEnvRunner(envCreator.get_env_name(), envCreator.create_env(),
+                               algorithm.get_algo_name(), algorithm.get_config(envCreator.get_env_name()))
     if args.mode == 'train':
         runner.train()
     elif args.mode == 'evaluate':
