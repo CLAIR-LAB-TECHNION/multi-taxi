@@ -115,7 +115,7 @@ class ParallelEnvRunner:
             
             # Check if we need to stop the evaluation
             if all(term.values()):
-                print("Termineting")
+                print("Terminating")
                 break
 
             if all(trunc.values()):

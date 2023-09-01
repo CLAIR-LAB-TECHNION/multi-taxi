@@ -1,18 +1,10 @@
-from runner.envs.env_creator import EnvCreator
-import subprocess
-subprocess.run(["pip", "install", "git+https://github.com/CLAIR-LAB-TECHNION/CLAIR_grid"], check=True)
+from env_creator import EnvCreator
 
-import itertools
-from clair_grid.coordination.sg_coordinator import SGDecentralizedCoordinator, SGCentralizedCoordinator, SGDecentralizedWithComCoordinator
+# pip install git+https://github.com/CLAIR-LAB-TECHNION/CLAIR_grid
 from clair_grid.environment.citylearn_wrapper import CityLearnWrapper
-from clair_grid.agents.agent import Agent
 
 from citylearn.citylearn import CityLearnEnv
-from citylearn.reward_function import RewardFunction
-from typing import List
-from clair_grid.agents.sg_random_agent import ESRandomAgent, CentralESRandomAgent
-from citylearn.reward_function import SolarPenaltyReward, RewardFunction, IndependentSACReward
-from citylearn.energy_model import ZERO_DIVISION_CAPACITY
+from citylearn.reward_function import SolarPenaltyReward
 
 
 class CityLearnCreator(EnvCreator):

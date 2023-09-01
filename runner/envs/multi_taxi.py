@@ -1,4 +1,4 @@
-from .env_creator import EnvCreator
+from env_creator import EnvCreator
 
 from multi_taxi import multi_taxi_v0, maps, FuelType
 from multi_taxi.env.reward_tables import TAXI_ENVIRONMENT_REWARDS
