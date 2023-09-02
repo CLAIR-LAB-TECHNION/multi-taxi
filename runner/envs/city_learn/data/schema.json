@@ -182,7 +182,7 @@
     }
   },
   "reward_function": {
-    "type": "problem.CityLearn.reward.CustomReward",
+    "type": "citylearn.reward_function.RewardFunction",
     "attributes": null
   },
   "buildings": {

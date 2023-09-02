@@ -11,7 +11,7 @@ from ray import tune
 from ray.rllib.env import ParallelPettingZooEnv
 
 from pettingzoo import ParallelEnv
-from envs.multi_taxi import MultiTaxiCreator
+# from envs.multi_taxi import MultiTaxiCreator
 from envs.city_learn.cityLearn import CityLearnCreator
 from algorithms.ppo import PPOCreator
 from algorithms.dqn import DQNCreator
