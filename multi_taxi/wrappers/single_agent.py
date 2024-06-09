@@ -95,7 +95,7 @@ class SingleTaxiWrapper(SingleAgentParallelEnvToGymWrapper):
             truncs = next(iter(truncs.values()))
             infos = next(iter(infos.values()))
 
-            single_agent_transitions.append((new_state, rewards, terms, truncs, infos))
+            single_agent_transitions.append((new_state, rewards, terms, truncs, infos, prob))
 
         return single_agent_transitions
 
