@@ -630,7 +630,7 @@ class MultiTaxiEnv(ParallelEnv):
         # env is done if all taxis are done
         return all(self.__taxi_is_dead(taxi) for taxi in state.taxis) or self.__objective_achieved(state)
 
-    def get_domain_map():
+    def get_domain_map(self):
         """
         returns the domain map
 
