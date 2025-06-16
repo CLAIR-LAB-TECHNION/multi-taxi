@@ -603,6 +603,25 @@ class MultiTaxiEnv(ParallelEnv):
         """
         return self.__action_name_to_index[agent].copy()
 
+    def objective_achieved(self, state=None):
+        """
+        tells the caller whether the environment objective has been reached.
+
+        Args:
+            state: the state in which to check the objective completion status.
+
+        Returns:
+            `True` if the environment objective has been reached, `False` otherwise.
+        """
+        if state is None:
+            state = self.__state
+
+        # the environment objective has been achieved if one of the following hods true:
+        #   1. `pickup_only` is set to `False` and all passengers have arrived at their destinations.
+        #   2. `pickup_only` is set to `True` and all passengers are in a taxi.
+        return ((not self.pickup_only and all(p.arrived for p in state.passengers)) or  # 1
+                (self.pickup_only and all(p.in_taxi for p in state.passengers)))  # 2
+
     def env_done(self, state=None):
         """
         tells the caller whether the environment run is complete and must be reset. An environment is done if either all
@@ -626,7 +645,7 @@ class MultiTaxiEnv(ParallelEnv):
             state = self.__state
 
         # env is done if all taxis are done
-        return all(self.__taxi_is_dead(taxi) for taxi in state.taxis) or self.__objective_achieved(state)
+        return all(self.__taxi_is_dead(taxi) for taxi in state.taxis) or self.objective_achieved(state)
 
     ###########################
     # End Extra API Functions #
@@ -831,7 +850,7 @@ class MultiTaxiEnv(ParallelEnv):
 
         self.__check_collisions(state, new_state, infos, rewards)
 
-        if self.__objective_achieved(new_state):
+        if self.objective_achieved(new_state):
             self.__objective_achieved_reward(new_state, infos, rewards)
         else:
             # it is ok to be stuck without fuel or run out of time if the objective is achieved at that step
@@ -1092,7 +1111,7 @@ class MultiTaxiEnv(ParallelEnv):
         # taxi is done if one of the following hods true:
         #   1. taxi is dead.
         #   2. objective achieved
-        return self.__taxi_is_dead(taxi) or self.__objective_achieved(state)
+        return self.__taxi_is_dead(taxi) or self.objective_achieved(state)
 
     def __taxi_can_die(self, taxi_name):
         # a taxi can die if one of the following holds:
@@ -1126,16 +1145,6 @@ class MultiTaxiEnv(ParallelEnv):
         return (p.in_taxi and  # passenger must be in a taxi in order to be dropped off
                 (p.id not in self.dropoff_order or  # passenger not in pickup order can be picked up at any time
                  all(all_passengers[p_id].arrived for p_id in self.dropoff_order[:self.dropoff_order.index(p.id)])))
-
-    def __objective_achieved(self, state=None):
-        if state is None:
-            state = self.__state
-
-        # the environment objective has been achieved if one of the following hods true:
-        #   1. `pickup_only` is set to `False` and all passengers have arrived at their destinations.
-        #   2. `pickup_only` is set to `True` and all passengers are in a taxi.
-        return ((not self.pickup_only and all(p.arrived for p in state.passengers)) or  # 1
-                (self.pickup_only and all(p.in_taxi for p in state.passengers)))  # 2
 
     ###############################
     # End Done Checking Functions #
