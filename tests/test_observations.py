@@ -74,7 +74,7 @@ def test_observation_spaces(env_name, env_cfg):
 
 def check_observation_space_validity(taxi_env_params, expected_observation_space):
     env = multi_taxi_v0.parallel_env(**taxi_env_params)
-    obs = env.reset()
+    obs, infos = env.reset()
 
     # make sure expected observations have the same keys as the true observations
     assert set(obs.keys()) == set(expected_observation_space.keys())

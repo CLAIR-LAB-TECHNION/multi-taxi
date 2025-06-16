@@ -408,7 +408,7 @@ class MultiTaxiEnv(ParallelEnv):
         # state and env objects
         self.__state = None
 
-    def reset(self, seed=None, return_info=False, options=None):
+    def reset(self, seed=None, options=None):
         # set seed if given
         if seed is not None:
             self.seed(seed)
@@ -424,11 +424,9 @@ class MultiTaxiEnv(ParallelEnv):
         # get all observations
         observations = self.__observe_all()
 
-        if not return_info:
-            return observations
-        else:
-            infos = {agent: {} for agent in self.agents}
-            return observations, infos
+
+        infos = {agent: {} for agent in self.agents}
+        return observations, infos
 
     def seed(self, seed=None):
         self.__np_random, _ = seeding.np_random(seed)

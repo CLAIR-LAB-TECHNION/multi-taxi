@@ -24,19 +24,9 @@ class SingleAgentParallelEnvToGymWrapper(BaseParallelWrapper, gymnasium.Env):
     def reset(self, **kwargs):
         # get pettingzoo specific reset arguments
         seed = kwargs.pop('seed', None)  # random seed (also common in gym)
-        return_info = kwargs.pop('return_info', False)  # pettingzoo exclusive
 
         # run `reset` as usual.
-        out = self.env.reset(seed=seed,
-                             return_info=return_info,
-                             options=kwargs or None)
-
-        # check if infos are a part of the reset return
-        if return_info:
-            obs, infos = out
-        else:
-            obs = out
-            infos = {k: {} for k in obs.keys()}
+        obs, infos = self.env.reset(seed=seed, options=kwargs or None)
 
         # return the single entry value as is.
         # no need for the key (only one agent)
