@@ -1,8 +1,8 @@
 import gymnasium
-from pettingzoo.utils.wrappers import BaseParallelWraper
+from pettingzoo.utils.wrappers import BaseParallelWrapper
 
 
-class SingleAgentParallelEnvToGymWrapper(BaseParallelWraper, gymnasium.Env):
+class SingleAgentParallelEnvToGymWrapper(BaseParallelWrapper, gymnasium.Env):
     """
     A wrapper for single-agent parallel environments aligning the environments'
     API with OpenAI Gym.

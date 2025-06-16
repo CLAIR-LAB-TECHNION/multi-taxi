@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
-from pettingzoo.utils import BaseParallelWraper
+from pettingzoo.utils.wrappers import BaseParallelWrapper
 
 
-class FixedLocationsWrapper(BaseParallelWraper, ABC):
+class FixedLocationsWrapper(BaseParallelWrapper, ABC):
     def __init__(self, env, *locs):
         super().__init__(env)
 

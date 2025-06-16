@@ -14,7 +14,7 @@ authors = [
 description = "A highly configurable multi-agent adaptation of the OpenAI gym taxi environment https://gym.openai.com/envs/Taxi-v3/"
 keywords = ["AI", "RL", "environment", "multi-agent"]
 readme = "README.md"
-requires-python = ">= 3.10"
+requires-python = ">= 3.11"
 classifiers = [
     "License :: OSI Approved :: MIT License",
     "Development Status :: 4 - Beta",

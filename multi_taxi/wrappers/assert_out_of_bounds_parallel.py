@@ -1,9 +1,9 @@
 from gymnasium.spaces import Discrete
 
-from pettingzoo.utils import BaseParallelWraper
+from pettingzoo.utils.wrappers import BaseParallelWrapper
 
 
-class AssertOutOfBoundsParallelWrapper(BaseParallelWraper):
+class AssertOutOfBoundsParallelWrapper(BaseParallelWrapper):
     """
     this wrapper crashes for out of bounds actions
     Should be used for Discrete spaces

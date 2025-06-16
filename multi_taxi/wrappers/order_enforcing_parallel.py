@@ -1,8 +1,8 @@
-from pettingzoo.utils import BaseParallelWraper
+from pettingzoo.utils.wrappers import BaseParallelWrapper
 from pettingzoo.utils.env_logger import EnvLogger
 
 
-class OrderEnforcingParallelWrapper(BaseParallelWraper):
+class OrderEnforcingParallelWrapper(BaseParallelWrapper):
 
     def __init__(self, env):
         self._has_reset = False
