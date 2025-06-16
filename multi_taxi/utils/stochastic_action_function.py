@@ -33,7 +33,7 @@ class JointStochasticActionFunction:
             actions_list, probs = zip(*actions_and_probs_list)
 
             # calculate probability for actions list
-            prob = np.product(probs)
+            prob = np.prod(probs)
 
             # yield actions dict and actions dict probability
             yield {agent: action for agent, action in zip(joint_action.keys(), actions_list)}, prob
