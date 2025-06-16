@@ -9,9 +9,7 @@ class OrderEnforcingParallelWrapper(BaseParallelWrapper):
         super().__init__(env)
 
     def __getattr__(self, value):
-        if value == "possible_agents":
-            EnvLogger.error_possible_agents_attribute_missing("possible_agents")
-        elif value == "observation_spaces":
+        if value == "observation_spaces":
             raise AttributeError(
                 "The base environment does not have an possible_agents attribute. Use the environments "
                 "`observation_space` method instead"
