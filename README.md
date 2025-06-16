@@ -52,13 +52,17 @@ implementation paper can be found [here](https://github.com/ofirAbu/MultiTaxiLib
 # Citation
 To cite this repository in academic works or any other purpose, please use the following BibTeX citation:
 ```BibTeX
-@software{Azran_Multi_Taxi_A_2023,
-      author = {Azran, Guy and Keren, Sarah},
-      month = {3},
-      title = {{Multi Taxi: A Modular Setting for Multi-Agent Systems Experiments}},
-      url = {https://github.com/CLAIR-LAB-TECHNION/multi-taxi},
-      version = {0.4.0},
-      year = {2023}
+@article{azranContextualPreplanningReward2024,
+  title = {Contextual {{Pre-planning}} on {{Reward Machine Abstractions}} for {{Enhanced Transfer}} in {{Deep Reinforcement Learning}}},
+  author = {Azran, Guy and Danesh, Mohamad H. and Albrecht, Stefano V. and Keren, Sarah},
+  year = {2024},
+  month = mar,
+  journal = {Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume = {38},
+  number = {10},
+  pages = {10953--10961},
+  issn = {2374-3468},
+  doi = {10.1609/aaai.v38i10.28970},
 }
 ```
 Alternatively, we offer a [CITATION.cff file](https://citation-file-format.github.io/) with GitHub and Zotero
