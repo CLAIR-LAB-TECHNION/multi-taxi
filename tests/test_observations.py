@@ -1,5 +1,6 @@
 import pytest
 from gymnasium.spaces import MultiDiscrete, Box, Dict
+import numpy as np
 
 from multi_taxi import multi_taxi_v0, ObservationType
 from .common import test_env_cfgs
@@ -88,13 +89,13 @@ def check_observation_space_validity(taxi_env_params, expected_observation_space
             assert MultiDiscrete(expected_observation_space[agent]) == obs_space
             assert len(env.unwrapped.get_observation_meanings(agent)) == len(obs_space)
         elif obs_type == ObservationType.IMAGE:
-            assert Box(*expected_observation_space[agent]) == obs_space
+            assert Box(*expected_observation_space[agent], dtype=np.uint8) == obs_space
         else:
             sym_obs = expected_observation_space[agent][ObservationType.SYMBOLIC.value]
             img_obs = expected_observation_space[agent][ObservationType.IMAGE.value]
             assert Dict(spaces={
                 ObservationType.SYMBOLIC.value: MultiDiscrete(sym_obs),
-                ObservationType.IMAGE.value: Box(*img_obs)
+                ObservationType.IMAGE.value: Box(*img_obs, dtype=np.uint8)
             }) == obs_space
 
             # check symbolic observation space length same as meaning length:
