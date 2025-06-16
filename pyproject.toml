@@ -1,3 +1,36 @@
 [build-system]
-requires = ["setuptools>=42"]
+requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
+
+[project]  # defines all the package metadata
+dynamic = ["version", "dependencies"]  # metadata to be read from a file or the package itself (see [tool.setuptools.dynamic])
+name = "multi-taxi"
+authors = [
+    { name = "Guy Azran", email = "guy.azran@campus.technion.ac.il" },
+    { name = "Mohamad H. Danesh", email = "mo.danesh@mail.mcgill.ca" },
+    { name = "Stefano V. Albrecht", email = "s.albrecht@ed.ac.uk" },
+    { name = "Sarah Keren", email = "sarahk@technion.ac.il" }
+]
+description = "A highly configurable multi-agent adaptation of the OpenAI gym taxi environment https://gym.openai.com/envs/Taxi-v3/"
+keywords = ["AI", "RL", "environment", "multi-agent"]
+readme = "README.md"
+requires-python = ">= 3.10"
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3"
+]
+license = { file = "LICENSE.txt" }
+
+[project.urls]
+Repository = "https://github.com/CLAIR-LAB-TECHNION/multi_taxi"
+
+[tool.setuptools.dynamic]
+version = { attr = "multi_taxi.__version__" }
+dependencies = { file = ["requirements.txt"] }
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+include = ['multi_taxi*']  # the * includes subfolders recursively
