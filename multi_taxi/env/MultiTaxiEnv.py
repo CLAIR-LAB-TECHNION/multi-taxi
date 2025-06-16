@@ -845,6 +845,7 @@ class MultiTaxiEnv(ParallelEnv):
                                                                infos[taxi.name]['refuel_success']):
                 taxi.fuel -= 1
 
+            # turn off the engine on empty tank, if specified in config
             if taxi.engine_on and taxi.empty_tank and self.engine_off_on_empty_tank[taxi.name]:
                 taxi.engine_on = False
 
