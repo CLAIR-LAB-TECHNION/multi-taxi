@@ -82,9 +82,6 @@ class Taxi:
             for passenger in self.passengers:
                 passenger.location = new_loc
 
-            # reduce fuel capacity by 1
-            self.fuel -= 1
-
     @property
     def empty_tank(self):
         return self.fuel == 0
