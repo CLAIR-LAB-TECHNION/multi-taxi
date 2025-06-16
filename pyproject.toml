@@ -30,7 +30,10 @@ version = { attr = "multi_taxi.__version__" }
 dependencies = { file = ["requirements.txt"] }
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = [
+    "pytest",
+    "aidm @ git+https://github.com/CLAIR-LAB-TECHNION/aidm@22d4b29767f9282122c7aa963f25c1b70ceb1187"
+]
 
 [tool.setuptools.packages.find]
 include = ['multi_taxi*']  # the * includes subfolders recursively
