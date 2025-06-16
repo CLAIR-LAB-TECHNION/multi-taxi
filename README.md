@@ -26,7 +26,7 @@ available in
 The easiest way to install `multi-taxi` is directly from the git repository using `pip`. Here is how to install the
 latest stable version:
 ```shell
-pip install "git+https://github.com/CLAIR-LAB-TECHNION/multi-taxi@0.4.0"
+pip install "git+https://github.com/CLAIR-LAB-TECHNION/multi-taxi@0.5.0"
 ```
 
 You can also download our latest updates by not specifying a tag, like so:
