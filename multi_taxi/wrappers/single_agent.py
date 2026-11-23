@@ -17,6 +17,9 @@ class SingleAgentParallelEnvToGymWrapper(BaseParallelWrapper, gymnasium.Env):
         # assert single agent environment
         assert len(env.possible_agents) == 1
 
+        # copy, since `gymnasium.Env.metadata` would otherwise shadow the wrapped env's metadata
+        self.metadata = dict(env.metadata)
+
     @property
     def render_mode(self):
         return self.env.unwrapped.render_mode
