@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 from pettingzoo.test import api_test, parallel_api_test
 
@@ -24,3 +25,17 @@ def __multi_seed_api_test(env_init, name, cfg, pz_test):
     for _ in range(NUM_SEEDS):
         seed = abs(hash(str(seed)))
         pz_test(env_init(**cfg, initial_seed=seed), num_cycles=NUM_CYCLES)
+
+
+@pytest.mark.parametrize('render_mode', ['ansi', 'rgb_array'])
+def test_parallel_env_render_returns_value(render_mode):
+    env = multi_taxi_v0.parallel_env(render_mode=render_mode, initial_seed=INITIAL_SEED)
+    env.reset(seed=INITIAL_SEED)
+
+    rendering = env.render()
+
+    assert rendering is not None
+    if render_mode == 'ansi':
+        assert rendering == env.unwrapped.render()
+    else:
+        np.testing.assert_array_equal(rendering, env.unwrapped.render())
