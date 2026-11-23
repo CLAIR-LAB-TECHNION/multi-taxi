@@ -20,7 +20,7 @@ class OrderEnforcingParallelWrapper(BaseParallelWrapper):
                 "method instead"
             )
         else:
-            return getattr(self.unwrapped, value)
+            return super().__getattr__(value)
 
     def render(self):
         if not self._has_reset:
