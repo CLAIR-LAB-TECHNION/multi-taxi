@@ -1191,6 +1191,11 @@ class MultiTaxiEnv(ParallelEnv):
             dim_vec.append(self.max_fuel[taxi_name] + 1)
             observations.append(SymbolicObservation.REMAINING_FUEL.value)
 
+        # remaining steps info
+        if not self.infinite_steps[taxi_name]:
+            dim_vec.append(self.max_steps[taxi_name] + 1)
+            observations.append(SymbolicObservation.REMAINING_STEPS.value)
+
         # engine control info
         if self.has_engine_control[taxi_name]:
             dim_vec.append(2)
@@ -1215,6 +1220,11 @@ class MultiTaxiEnv(ParallelEnv):
                 if not self.infinite_fuel[name]:
                     dim_vec.append(self.max_fuel[name] + 1)
                     observations.append(SymbolicObservation.OTHER_REMAINING_FUEL.value.format(name=name))
+
+                # remaining steps info
+                if not self.infinite_steps[name]:
+                    dim_vec.append(self.max_steps[name] + 1)
+                    observations.append(SymbolicObservation.OTHER_REMAINING_STEPS.value.format(name=name))
 
                 if self.has_engine_control[name]:
                     dim_vec.append(2)
@@ -1339,6 +1349,10 @@ class MultiTaxiEnv(ParallelEnv):
         if not self.infinite_fuel[taxi_name]:
             obs.append(cur_taxi.fuel)
 
+        # remaining steps info
+        if not self.infinite_steps[taxi_name]:
+            obs.append(cur_taxi.max_steps - cur_taxi.n_steps)
+
         # engine control
         if self.has_engine_control[taxi_name]:
             obs.append(cur_taxi.engine_on)
@@ -1358,6 +1372,10 @@ class MultiTaxiEnv(ParallelEnv):
                 # fuel info
                 if not self.infinite_fuel[other_taxi.name]:
                     obs.append(other_taxi.fuel)
+
+                # remaining steps info
+                if not self.infinite_steps[other_taxi.name]:
+                    obs.append(other_taxi.max_steps - other_taxi.n_steps)
 
                 # engine control
                 if self.has_engine_control[other_taxi.name]:

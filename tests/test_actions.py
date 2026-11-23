@@ -83,6 +83,7 @@ TRUE_POSSIBLE_ACTIONS = {
         'taxi_1': STANDARD_REFUEL,
         'taxi_2': STANDARD_REFUEL
     },
+    'two_taxi_steps_limit': {f'taxi_{i}': STANDARD_GENERIC for i in range(2)},
     'two_taxi_small_map': {f'taxi_{i}': STANDARD_GENERIC for i in range(2)},
     'two_taxi_see_each_other_small_map': {f'taxi_{i}': STANDARD_GENERIC for i in range(2)},
     'single_taxi_image_observation': {'taxi_0': __pickup_specify(2)},
