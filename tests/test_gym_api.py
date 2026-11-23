@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from gymnasium import spaces
 
-from multi_taxi import single_taxi_v0
+from multi_taxi import multi_taxi_v0, single_taxi_v0
 from .common import single_agent_cfgs
 
 NUM_SEEDS = 5
@@ -18,6 +18,16 @@ def test_gym_api(env_name, env_cfg):
     for _ in range(NUM_SEEDS):
         seed = abs(hash(str(seed)))
         check_env(single_taxi_v0.gym_env(**env_cfg, initial_seed=seed), skip_render_check=False)
+
+
+def test_gym_env_metadata():
+    env = single_taxi_v0.gym_env()
+
+    assert env.metadata['render_modes'] == env.unwrapped.metadata['render_modes']
+    assert env.metadata['name'] == 'single_taxi_v0'
+
+    # renaming the single-taxi env must not rename the underlying multi-taxi env (shared class attribute)
+    assert multi_taxi_v0.parallel_env().metadata['name'] == 'multi_taxi_env_v0'
 
 
 # The env checker below was taken adapted from:
