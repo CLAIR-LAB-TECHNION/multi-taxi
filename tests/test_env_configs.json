@@ -92,6 +92,11 @@
         "num_taxis": 3,
         "max_fuel": [15, 25, 99]
     },
+    "two_taxi_steps_limit": {
+        "num_taxis": 2,
+        "max_steps": [2, null],
+        "can_see_other_taxi_info": true
+    },
     "two_taxi_small_map": {
         "num_taxis": 2,
         "domain_map": "SMALL_MAP"

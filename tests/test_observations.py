@@ -48,6 +48,10 @@ TRUE_SPACES = {
         'taxi_1': [7, 12, 26, 2, 7, 12, 7, 12, 2, 2, 2, 2],
         'taxi_2': [7, 12, 100, 2, 7, 12, 7, 12, 2, 2, 2, 2]
     },
+    'two_taxi_steps_limit': {
+        'taxi_0': [7, 12, 3, 2, 7, 12, 7, 12, 7, 12, 2, 2, 2],
+        'taxi_1': [7, 12, 7, 12, 3, 2, 7, 12, 7, 12, 2, 2, 2],
+    },
     'two_taxi_small_map': {f'taxi_{i}': [5, 5, 5, 5, 5, 5, 2, 2, 2] for i in range(2)},
     'two_taxi_see_each_other_small_map': {f'taxi_{i}': [5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2] for i in range(2)},
     'single_taxi_image_observation': {'taxi_0': [0, 255, (140, 226, 3)]},
@@ -104,3 +108,16 @@ def check_observation_space_validity(taxi_env_params, expected_observation_space
             assert meanings_length == obs_space_length
 
         assert obs_space.contains(agent_obs)
+
+
+def test_remaining_steps_observation():
+    env = multi_taxi_v0.parallel_env(**test_env_cfgs['two_taxi_steps_limit'])
+    obs, _ = env.reset()
+    meanings = {agent: env.unwrapped.get_observation_meanings(agent) for agent in env.possible_agents}
+
+    # the remaining steps of taxi_0 seen by itself and by taxi_1 count down to 0 and stay there after it dies
+    for remaining in [2, 1, 0, 0]:
+        assert obs['taxi_0'][meanings['taxi_0'].index('remaining_steps')] == remaining
+        assert obs['taxi_1'][meanings['taxi_1'].index('taxi_0_remaining_steps')] == remaining
+        assert all(env.observation_space(agent).contains(obs[agent]) for agent in env.possible_agents)
+        obs, *_ = env.step({agent: 0 for agent in env.agents})

@@ -16,11 +16,13 @@ class SymbolicObservation(Enum):
     LOCATION_ROW = 'location_row'  # the location row of the observing taxi
     LOCATION_COL = 'location_col'  # the location column of the observing taxi
     REMAINING_FUEL = 'remaining_fuel'  # the remaining fuel of the observing taxi
+    REMAINING_STEPS = 'remaining_steps'  # the number of steps the observing taxi can still take
     ENGINE_ON = 'engine_on'  # indicates if the observing taxi's engine is on
     IS_DEAD = 'is_dead'  # indicates if the observing taxi is dead
     OTHER_LOCATION_ROW = '{name}_location_row'  # the location row of the named taxi
     OTHER_LOCATION_COL = '{name}_location_col'  # the location column of the named taxi
     OTHER_REMAINING_FUEL = '{name}_remaining_fuel'  # the remaining fuel of the named taxi
+    OTHER_REMAINING_STEPS = '{name}_remaining_steps'  # the number of steps the named taxi can still take
     OTHER_ENGINE_ON = '{name}_engine_on'  # indicates if the named taxi's engine is on
     OTHER_IS_DEAD = '{name}_is_dead'  # indicates if the named taxi is dead
     PASSENGER_LOCATION_ROW = 'passenger_{index}_location_row'  # the location row of the indexed passenger
