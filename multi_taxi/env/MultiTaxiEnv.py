@@ -987,7 +987,7 @@ class MultiTaxiEnv(ParallelEnv):
             return  # cannot add passenger. done with action
 
         # get passenger id for pickup
-        passenger_id = int(action[-1])
+        passenger_id = int(action.removeprefix(Action.PICKUP.value))
 
         for p in passengers:
             if (p.id == passenger_id and p.location == taxi.location and
@@ -1031,7 +1031,7 @@ class MultiTaxiEnv(ParallelEnv):
         infos[taxi.name]['dropoff_success'] = False
 
         # get passenger id for pickup
-        passenger_id = int(action[-1])
+        passenger_id = int(action.removeprefix(Action.DROPOFF.value))
 
         for p in taxi.passengers:
             if p.id == passenger_id:
