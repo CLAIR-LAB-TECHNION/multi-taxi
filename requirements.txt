@@ -1,2 +1,2 @@
-pettingzoo==1.25
+pettingzoo==1.27.0
 pillow
