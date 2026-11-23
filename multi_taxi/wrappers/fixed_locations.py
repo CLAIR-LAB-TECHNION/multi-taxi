@@ -12,14 +12,14 @@ class FixedLocationsWrapper(BaseParallelWrapper, ABC):
             for i in range(0, len(locs), 2)
         ]
 
-    def reset(self, seed=None):
-        self.env.reset(seed=seed)
+    def reset(self, seed=None, options=None):
+        _, infos = self.env.reset(seed=seed, options=options)
         self.set_locations()
 
         # must re-observe with new locations
         obs = self.unwrapped.observe_all()
 
-        return obs
+        return obs, infos
 
     @abstractmethod
     def set_locations(self):
