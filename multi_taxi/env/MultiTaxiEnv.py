@@ -221,7 +221,8 @@ class MultiTaxiEnv(ParallelEnv):
                                                and are considered to have arrived.
             clear_dead_taxis: if `True`, taxis that can no longer act (i.e. dead) are completely removed from the
                               environment. otherwise, dead taxis remain in the environment, continue receiving rewards,
-                              and can be collided into.
+                              and can be collided into. passengers in a removed taxi are still rendered at its
+                              location.
             max_steps: determines the maximum number of actions a taxi can take at each reset.
             max_capacity: determines a taxi's maximum passenger capacity.
             max_fuel: determines a taxi's maximum fuel capacity
@@ -1433,13 +1434,14 @@ class MultiTaxiEnv(ParallelEnv):
         # mark passengers and destinations
         for passenger in self.__state.passengers:
             if not passenger.arrived:  # only show passengers that are not in their destination
-                if not passenger.in_taxi:  # only show passenger when not in taxi
-                    map_row, map_col = self.domain_map.location_to_domain_map_idx(*passenger.location)
-                    out_map[map_row, map_col] = self.__cond_colorize(PASSENGER_RENDERING_CHAR, passenger.color,
-                                                                     highlight=False, with_colors=with_colors)
                 if not self.pickup_only:  # only show destinations if "pickup only" is disabled
                     map_row, map_col = self.domain_map.location_to_domain_map_idx(*passenger.destination)
                     out_map[map_row, map_col] = self.__cond_colorize(DESTINATION_RENDERING_CHAR, passenger.color,
+                                                                     highlight=False, with_colors=with_colors)
+                if not passenger.in_taxi or (self.clear_dead_taxis and
+                                             self.__taxi_is_dead(self.__state.taxis[passenger.carrying_taxi])):
+                    map_row, map_col = self.domain_map.location_to_domain_map_idx(*passenger.location)
+                    out_map[map_row, map_col] = self.__cond_colorize(PASSENGER_RENDERING_CHAR, passenger.color,
                                                                      highlight=False, with_colors=with_colors)
 
         # highlight taxis on the map
