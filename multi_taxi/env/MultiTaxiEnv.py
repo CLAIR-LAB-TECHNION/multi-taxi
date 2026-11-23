@@ -1035,17 +1035,15 @@ class MultiTaxiEnv(ParallelEnv):
 
         for p in taxi.passengers:
             if p.id == passenger_id:
-                taxi.drop_off(p)
-                infos[taxi.name]['dropoff_success'] = True
-                if p.arrived:  # final dropoff
-                    self.__add_reward(taxi.name, infos, rewards, Event.FINAL_DROPOFF)
-                    infos[taxi.name]['dropped_passenger_at_destination'] = True
-
-                # # bad intermediate dropoff or passenger cannot be dropped off due to order
-                elif self.no_intermediate_dropoff or self.__passenger_can_be_dropped_off(p, passengers):
-                    taxi.pick_up(p)  # undo dropoff
-                    infos[taxi.name]['dropoff_success'] = False  # mark as failure
-                else:  # intermediate dropoff
+                if p.location == p.destination:  # final dropoff, only if allowed by the dropoff order
+                    if self.__passenger_can_be_dropped_off(p, passengers):
+                        taxi.drop_off(p)
+                        infos[taxi.name]['dropoff_success'] = True
+                        self.__add_reward(taxi.name, infos, rewards, Event.FINAL_DROPOFF)
+                        infos[taxi.name]['dropped_passenger_at_destination'] = True
+                elif not self.no_intermediate_dropoff:  # intermediate dropoff
+                    taxi.drop_off(p)
+                    infos[taxi.name]['dropoff_success'] = True
                     infos[taxi.name]['dropped_passenger_at_destination'] = False
                     self.__intermediate_dropoff_reward(taxi.name, p, infos, rewards)
                 break  # passenger found. no need to continue
@@ -1063,11 +1061,11 @@ class MultiTaxiEnv(ParallelEnv):
             return
 
         # sort passengers to ensure that we always drop off the passenger with the lowest ID
-        passengers = sorted(taxi.passengers, key=lambda passenger: passenger.id)
+        riders = sorted(taxi.passengers, key=lambda passenger: passenger.id)
 
         # assume intermediate dropoff and fix if final dropoff
         infos[taxi.name]['dropped_passenger_at_destination'] = False
-        for p in passengers:
+        for p in riders:
             if p.location == p.destination and self.__passenger_can_be_dropped_off(p, passengers):
                 infos[taxi.name]['dropped_passenger_at_destination'] = True
                 taxi.drop_off(p)
@@ -1075,12 +1073,13 @@ class MultiTaxiEnv(ParallelEnv):
                 break
 
         if not infos[taxi.name]['dropped_passenger_at_destination']:
-            # no passengers at their destination
-            if self.no_intermediate_dropoff:  # bad dropoff action
+            # no passenger can be delivered. riders at their destination are blocked by the dropoff order
+            not_at_destination = [p for p in riders if p.location != p.destination]
+            if self.no_intermediate_dropoff or not not_at_destination:  # bad dropoff action
                 infos[taxi.name]['dropoff_success'] = False  # dropoff failure
                 self.__add_reward(taxi.name, infos, rewards, Event.BAD_DROPOFF)
-            else:  # intermediate dropoff of the passenger with the lowest ID
-                p = passengers[0]
+            else:  # intermediate dropoff of the lowest-ID passenger not at its destination
+                p = not_at_destination[0]
                 taxi.drop_off(p)
                 self.__intermediate_dropoff_reward(taxi.name, p, infos, rewards)
 
