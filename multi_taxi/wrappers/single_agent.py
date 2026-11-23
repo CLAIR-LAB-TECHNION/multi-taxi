@@ -17,9 +17,7 @@ class SingleAgentParallelEnvToGymWrapper(BaseParallelWrapper, gymnasium.Env):
         # assert single agent environment
         assert len(env.possible_agents) == 1
 
-        # expose the wrapped env's metadata (render modes, etc.) to gymnasium tooling. without this, the empty
-        # `gymnasium.Env.metadata` class attribute shadows it. copy so that changes made here (e.g., the env name)
-        # do not modify the class-level metadata dict shared by all multi-taxi environments.
+        # copy, since `gymnasium.Env.metadata` would otherwise shadow the wrapped env's metadata
         self.metadata = dict(env.metadata)
 
     @property
