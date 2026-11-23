@@ -148,3 +148,23 @@ def test_non_collider():
 
     taxis = env.state().taxis
     assert all(not taxi.collided for taxi in taxis)
+
+
+def test_specific_pickup_and_dropoff_two_digit_passenger_id():
+    env = multi_taxi_v0.parallel_env(num_passengers=11, specify_passenger_pickup=True,
+                                     specify_passenger_dropoff=True)
+    env.reset(seed=0)
+    s = env.state()
+    s.taxis[0].location = (0, 0)
+    for p in s.passengers:
+        p.location = (4, 4)
+    s.passengers[10].location = (0, 0)
+    s.passengers[10].destination = (1, 1)
+    env.unwrapped.set_state(s)
+    action_map = env.unwrapped.get_action_map('taxi_0')
+
+    _, _, _, _, infos = env.step({'taxi_0': action_map['pickup10']})
+    assert infos['taxi_0']['pickup_success']
+
+    _, _, _, _, infos = env.step({'taxi_0': action_map['dropoff10']})
+    assert infos['taxi_0']['dropoff_success']
