@@ -22,11 +22,11 @@ class OrderEnforcingParallelWrapper(BaseParallelWrapper):
         else:
             return getattr(self.unwrapped, value)
 
-    def render(self, mode="human"):
+    def render(self):
         if not self._has_reset:
             EnvLogger.error_render_before_reset()
         else:
-            self.env.render()
+            return self.env.render()
 
     def step(self, action):
         if not self._has_reset:
