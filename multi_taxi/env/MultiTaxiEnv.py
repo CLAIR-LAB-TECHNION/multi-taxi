@@ -765,27 +765,18 @@ class MultiTaxiEnv(ParallelEnv):
                                    [PASSENGER_NOT_IN_TAXI] * self.num_passengers)
 
     def __fix_passenger_at_destination(self, start_locations, dest_locations):
-        # check that all passenger start and dest are different
-        if self.num_passengers == 1 and np.all(start_locations == dest_locations):  # single passenger, keep sampling
-            while np.all(start_locations == dest_locations):
+        """Resample destinations until no passenger starts at its own destination.
+
+        Distinct destinations are resampled together. Otherwise only those of passengers at their destination are.
+        """
+        at_dest = np.all(start_locations == dest_locations, axis=1)
+        while at_dest.any():
+            if self.distinct_passenger_dropoffs:
                 dest_locations = self.domain_map.sample_free_locations(self.num_passengers, rng=self.__np_random)
-
-            return start_locations, dest_locations
-        else:  # multiple passengers, swap distinct destination with some other one
-            duplicate_locations_passenger = []
-            for i, (s, d) in enumerate(zip(start_locations, dest_locations)):
-                if np.all(s == d):
-                    duplicate_locations_passenger.append(i)
-
-            for i in duplicate_locations_passenger:  # swap duplicate dest with some other destination
-                if self.distinct_passenger_dropoffs:
-                    if np.all(start_locations[i] == dest_locations[i]):  # check that it wasn't already swapped
-                        tmp = dest_locations[i - 1]
-                        dest_locations[i - 1] = dest_locations[i]
-                        dest_locations[i] = tmp
-                else:
-                    while np.all(start_locations[i] == dest_locations[i]):
-                        dest_locations[i] = self.domain_map.sample_free_locations(n=None, rng=self.__np_random)
+            else:
+                dest_locations[at_dest] = self.domain_map.sample_free_locations(at_dest.sum(), distinct=False,
+                                                                                rng=self.__np_random)
+            at_dest = np.all(start_locations == dest_locations, axis=1)
 
         return start_locations, dest_locations
 
