@@ -52,7 +52,7 @@ class Taxi:
     def drop_all(self):
         for p in self.passengers:
             p.dropped_off()
-        self.passengers = {}
+        self.passengers = set()
 
     def move(self, direction: Action, simulation=False):
         row, col = self.location

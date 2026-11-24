@@ -234,8 +234,10 @@ class MultiTaxiEnv(ParallelEnv):
             can_refuel_on_empty: if `False`, a taxi is considered dead when its fuel capacity reaches 0. if `True`,
                                  a taxi with 0 fuel may still act if it is on a valid fuel station.
             can_collide: if `True`, the taxi becomes a collidable and may collide with other collidable taxis.
-            passenger_fumble: if `True`, all carried passengers are dropped off when the taxi dies at the location
-                              of the taxi's death.
+            passenger_fumble: if `True` (the default), all carried passengers are dropped off when the taxi dies at
+                              the location of the taxi's death, unless the objective is achieved at that step. any
+                              live taxi may then pick them up. if `False`, they stay in the dead taxi for the rest of
+                              the episode.
             specify_passenger_pickup: if `True`, the taxi's "pickup" actions must indicate the exact passenger they
                                       intend to pick up. otherwise, a generic pickup action is used. generic pickup
                                       will pick up any passenger at the taxi's current location. if multiple passengers
@@ -858,11 +860,11 @@ class MultiTaxiEnv(ParallelEnv):
             self.__check_stuck_without_fuel(new_state, infos, rewards)
             self.__check_out_of_time(new_state, infos, rewards)
 
-        # drop all passengers of dead taxis if configured to do so
-        for taxi_name in self.agents:
-            if self.passenger_fumble[taxi_name] and self.__taxi_is_dead(new_state.taxi_by_name[taxi_name]):
-                taxi = new_state.taxi_by_name[taxi_name]
-                taxi.drop_all()
+            # drop all passengers of dead taxis if configured to do so
+            for taxi_name in self.agents:
+                if self.passenger_fumble[taxi_name] and self.__taxi_is_dead(new_state.taxi_by_name[taxi_name]):
+                    taxi = new_state.taxi_by_name[taxi_name]
+                    taxi.drop_all()
 
         # set dones
         env_done = self.env_done(new_state)
